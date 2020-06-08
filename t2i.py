@@ -20,6 +20,14 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
 
 
+class IncrementingDefaultdict(dict):
+    def __getitem__(self, item):
+        if item not in self:
+            self[item] = len(self)
+
+        return super().__getitem__(item)
+
+
 class T2I(defaultdict):
     """
     Provides vocab functionality mapping words to indices.
@@ -54,14 +62,14 @@ class T2I(defaultdict):
 
         @TODO
         """
-        t2i = defaultdict(lambda f: len(t2i))
+        t2i = IncrementingDefaultdict()
 
         if type(corpus) == str:
             corpus = [corpus]  # Avoid code redundancy in case of single string
 
         for sentence in corpus:
             tokens = sentence.strip().split(delimiter)
-            map(t2i.__getitem__, tokens)
+            [t2i[token] for token in tokens]
 
         return T2I(dict(t2i), unk_token, eos_token)
 
@@ -71,7 +79,7 @@ class T2I(defaultdict):
 
         @TODO
         """
-        self.__call__(corpus, delimiter)
+        return self.__call__(corpus, delimiter=delimiter)
 
     def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str]=None) -> Corpus:
         """
@@ -91,7 +99,7 @@ class T2I(defaultdict):
 
             corpus.append(tokens)
 
-        return corpus
+        return corpus[0]  # TODO: Make consistent for different types
 
     def __call__(self, corpus: Union[str, List[str]], delimiter: str=" ") -> IndexedCorpus:
         """
@@ -105,9 +113,9 @@ class T2I(defaultdict):
         indexed_corpus = []
 
         for sentence in corpus:
-            indexed_corpus.append(list(map(self.t2i.__getitem__, sentence.strip().split(" "))))
+            indexed_corpus.append(list(map(self.t2i.__getitem__, sentence.strip().split(delimiter))))
 
-        return indexed_corpus
+        return indexed_corpus[0]  # TODO: Make consistent for different types
 
     def __repr__(self) -> str:
         """ Return a string representation of the T2I object. """
