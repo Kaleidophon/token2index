@@ -48,7 +48,8 @@ class T2I(defaultdict):
         self.unk_idx = t2i[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
-        self.i2t = list(t2i.keys())
+        self.i2t = dict([(v, k) for k, v in self.items()])
+        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
 
     @property
     def t2i(self) -> Dict[str, int]:
@@ -56,13 +57,31 @@ class T2I(defaultdict):
 
     @staticmethod
     def build(corpus: Corpus, delimiter: str=" ", unk_token: str="<unk>",
-              eos_token: str="<eos>") -> defaultdict:
+              eos_token: str="<eos>") -> defaultdict:  # TODO: Add Abstract T2I class for a sensible annotation here
         """
         Build token index from scratch on a corpus.
 
         @TODO
         """
-        t2i = IncrementingDefaultdict()
+        t2i = T2I._create_index(corpus, delimiter)
+
+        return T2I(t2i, unk_token, eos_token)
+
+    def extend(self, corpus: Corpus, delimiter: str=" ") -> defaultdict:  # TODO: Add Abstract T2I class for a sensible annotation here
+        """
+        Extend an existing T2I with tokens from a new tokens.
+
+        @TODO
+        """
+        raw_t2i = T2I._create_index(corpus, delimiter, seed_dict=dict(self))
+
+        t2i = T2I(raw_t2i, self.unk_token, self.eos_token)
+
+        return t2i
+
+    @staticmethod
+    def _create_index(corpus: Corpus, delimiter: str=" ", seed_dict: dict={}) -> dict:
+        t2i = IncrementingDefaultdict(seed_dict)
 
         if type(corpus) == str:
             corpus = [corpus]  # Avoid code redundancy in case of single string
@@ -71,7 +90,7 @@ class T2I(defaultdict):
             tokens = sentence.strip().split(delimiter)
             [t2i[token] for token in tokens]
 
-        return T2I(dict(t2i), unk_token, eos_token)
+        return dict(t2i)
 
     def index(self, corpus: Corpus, delimiter=" ") -> IndexedCorpus:
         """
