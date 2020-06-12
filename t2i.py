@@ -8,18 +8,20 @@ from collections import defaultdict
 from typing import Dict, List, Union, Iterable, Optional
 
 # Custom types
-# TODO: Make more general
-Corpus = Union[str, List[str]]
+Corpus = Union[str, Iterable[str]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 
 # TODO
 # - Proper doc
-# - Unit tests
 # - __repr__
 # - type checks / exceptions
 # - More elegant and consistent handling of sequence vs. sequence of sequences with decorator?
 # - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
+# - Add option to not create new entries for unknown words
+# - Build documentation
+# - Write README
+# - Polishing, fancy README tags
 
 
 class IncrementingDefaultdict(dict):
@@ -61,6 +63,10 @@ class T2IMeta(defaultdict, abc.ABC):
     def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str]):
         ...
 
+    @abc.abstractmethod
+    def __call__(self, corpus: Corpus, delimiter: str):
+        ...
+
 
 class T2I(T2IMeta):
     """
@@ -71,7 +77,7 @@ class T2I(T2IMeta):
 
     @TODO
     """
-    def __init__(self, t2i: Dict[str, int], unk_token: str="<unk>", eos_token: str="<eos>") -> None:
+    def __init__(self, t2i: Dict[str, int], unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
         if unk_token not in t2i:
             t2i[unk_token] = len(t2i)
         if eos_token not in t2i:
@@ -90,8 +96,8 @@ class T2I(T2IMeta):
         return self
 
     @staticmethod
-    def build(corpus: Corpus, delimiter: str=" ", unk_token: str="<unk>",
-              eos_token: str="<eos>") -> T2IMeta:
+    def build(corpus: Corpus, delimiter: str = " ", unk_token: str = "<unk>",
+              eos_token: str = "<eos>") -> T2IMeta:
         """
         Build token index from scratch on a corpus.
 
@@ -101,7 +107,7 @@ class T2I(T2IMeta):
 
         return T2I(t2i, unk_token, eos_token)
 
-    def extend(self, corpus: Corpus, delimiter: str=" ") -> T2IMeta:
+    def extend(self, corpus: Corpus, delimiter: str = " ") -> T2IMeta:
         """
         Extend an existing T2I with tokens from a new tokens.
 
@@ -114,7 +120,7 @@ class T2I(T2IMeta):
         return t2i
 
     @staticmethod
-    def _create_index(corpus: Corpus, delimiter: str=" ", seed_dict: dict={}) -> Dict[str, int]:
+    def _create_index(corpus: Corpus, delimiter: str = " ", seed_dict: dict = {}) -> Dict[str, int]:
         """
         Create a simple dictionary, mapping every type in a Corpus to a unique index.
 
@@ -131,7 +137,7 @@ class T2I(T2IMeta):
 
         return dict(t2i)
 
-    def index(self, corpus: Corpus, delimiter: str=" ") -> IndexedCorpus:
+    def index(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
@@ -139,7 +145,7 @@ class T2I(T2IMeta):
         """
         return self.__call__(corpus, delimiter=delimiter)
 
-    def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str]=None) -> Corpus:
+    def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " ") -> Corpus:
         """
         Convert indices back to their original words.
 
@@ -159,7 +165,7 @@ class T2I(T2IMeta):
 
         return corpus[0]  # TODO: Make consistent for different types
 
-    def __call__(self, corpus: Union[str, List[str]], delimiter: str=" ") -> IndexedCorpus:
+    def __call__(self, corpus: Union[str, List[str]], delimiter: str = " ") -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 

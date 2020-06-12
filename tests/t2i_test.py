@@ -3,6 +3,7 @@ Unit tests for T2I class.
 """
 
 # STD
+from typing import Iterable
 import unittest
 
 # PROJECT
@@ -31,7 +32,7 @@ class IndexingTest(unittest.TestCase):
         self.test_corpus5 = "This is a #UNK# sentence #EOS#"
         self.test_corpus5b = "This is a goggledigook sentence #EOS#"
 
-    def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str=" ", delimiter: str=" "):
+    def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "):
         """
         Test whether first indexing and then un-indexing yields the original sequence.
         """
@@ -109,12 +110,12 @@ class TypeConsistencyTest(unittest.TestCase):
     expected to work with both single sentence or a list of sentences (or the indexed equivalents of that).
     """
     def setUp(self):
-        test_corpus = "This is a long test sentence. It contains many words."
+        test_corpus = "This is a long test sentence . It contains many words."
         self.t2i = T2I.build(test_corpus)
 
     def test_build_and_extend_consistency(self):
         """
-        Make sure that index is built correctly no matter whether the input to buil() is a single sentence or a list of
+        Make sure that index is built correctly no matter whether the input to build() is a single sentence or a list of
         sentences.
         """
         # Test build()
@@ -134,11 +135,61 @@ class TypeConsistencyTest(unittest.TestCase):
         # Test extend with a mix of types
         self.assertEqual(t2i1.extend(test_corpus2), t2i2.extend(test_sentence2))
 
-    def test_index_consistency(self):
-        ...  # TODO
+    def test_indexing_consistency(self):
+        """
+        Test whether indexing is consistent with respect to the input type. Therefore, indexing a sentence should yield
+        a list of indices, and indexing a list of sentences should yield a list of lists of indices, i.e.
 
-    def test_unindex_consistency(self):
-        ...  # TODO
+        str -> List[int]
+        List[str] -> List[List[str]]
+
+        The reverse should hold for un-indexing, i.e.
+
+        List[int] -> str
+        List[List[int]] -> List[str]
+        """
+        # Check indexing consistency for single sentence
+        test_sentence = "This is a test sentence"
+        indexed_test_sentence = self.t2i(test_sentence)
+
+        self.assertEqual(type(indexed_test_sentence), list)
+        self.assertTrue(all([type(idx) == int for idx in indexed_test_sentence]))
+
+        # Check un-indexing consistency for single sentence
+        unindexed_test_sentence = self.t2i.unindex(indexed_test_sentence)
+        self.assertEqual(type(unindexed_test_sentence), str)
+        self.assertEqual(test_sentence, unindexed_test_sentence)
+        self.assertEqual(test_sentence.replace(" ", "###"), self.t2i.unindex(indexed_test_sentence, joiner="###"))
+        
+        # Check un-indexing consistency for single sentence without a joiner
+        unjoined_test_sentence = self.t2i.unindex(indexed_test_sentence, joiner=None)
+        self.assertEqual(test_sentence.split(" "), unjoined_test_sentence)
+        self.assertEqual(type(unjoined_test_sentence), list)
+        self.assertTrue(all([type(token) == str for token in unjoined_test_sentence]))
+
+        # Check indexing consistency for a list of sentences
+        test_corpus = ["This is a", "test sentence"]
+        indexed_test_corpus = self.t2i(test_corpus)
+
+        self.assertEqual(type(indexed_test_corpus), list)
+        self.assertTrue(all([type(sent) == list for sent in indexed_test_corpus]))
+        self.assertTrue(all([type(idx) == int for sent in test_corpus for idx in sent]))
+
+        # Check un-indexing consistency for a list of sentences
+        unindexed_test_corpus = self.t2i.unindex(indexed_test_corpus)
+        self.assertEqual(type(unindexed_test_corpus), list)
+        self.assertTrue([type(sent) == str for sent in unindexed_test_corpus])
+        self.assertEqual(unindexed_test_corpus, test_corpus)
+        self.assertEqual(
+            [sent.replace(" ", "###") for sent in test_corpus],
+            self.t2i.unindex(indexed_test_corpus, joiner="###")
+        )
+
+        # Check un-indexing consistency for a list of sentence  without a joiner
+        unjoined_test_corpus = self.t2i.unindex(indexed_test_corpus, joiner=None)
+        self.assertEqual(type(unindexed_test_corpus), list)
+        self.assertTrue(all([type(sent) == list for sent in unjoined_test_corpus]))
+        self.assertTrue(all([type(token) == str for sent in unjoined_test_corpus for token in sent]))
 
 
 class NumpyTest(unittest.TestCase):
