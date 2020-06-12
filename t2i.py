@@ -15,7 +15,6 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 
 # TODO
-# - __repr__
 # - type checks / exceptions
 # - Build from vocab file
 # - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
@@ -175,6 +174,12 @@ class T2IMeta(defaultdict, abc.ABC):
         """
         ...
 
+    def __repr__(self) -> str:
+        """ Return a string representation of the core dict inside a T2I object. """
+        # This is a way to call the __repr__ function of the grandparent class dict
+        # dict -> defaultdict -> T2IMeta -> T2I
+        return dict.__repr__(self)
+
 
 def indexing_consistency(func: Callable) -> Callable:
     """
@@ -250,7 +255,7 @@ class T2I(T2IMeta):
     can be mapped to the tokens' assigned indices. There are special tokens for the end of a sentence (eos_token) and
     for tokens that were not added to the index during the build phase (unk_token).
     """
-    def __init__(self, t2i:Index, unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
+    def __init__(self, t2i: Index, unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
         """
         Initialize the T2I class.
 
@@ -446,5 +451,6 @@ class T2I(T2IMeta):
         return indexed_corpus
 
     def __repr__(self) -> str:
-        """ Return a string representation of the T2I object. """
-        ...  # TODO
+        """ Return a string representation of a T2I object. """
+        return f"T2I(Size: {len(self.t2i)}, unk_token: {self.unk_token}, eos_token: {self.eos_token}, "\
+                f"{super().__repr__()})"
