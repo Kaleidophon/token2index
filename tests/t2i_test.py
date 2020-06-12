@@ -65,6 +65,8 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
 
+        # TODO: Test seed index with arbitrary indices
+
     def test_delimiter_indexing(self):
         """
         Test indexing with different delimiter.
@@ -145,7 +147,7 @@ class TypeConsistencyTest(unittest.TestCase):
 
         The reverse should hold for un-indexing, i.e.
 
-        List[int] -> str
+        List[int] -> str or List[str]
         List[List[int]] -> List[str]
         """
         # Check indexing consistency for single sentence
@@ -190,6 +192,10 @@ class TypeConsistencyTest(unittest.TestCase):
         self.assertEqual(type(unindexed_test_corpus), list)
         self.assertTrue(all([type(sent) == list for sent in unjoined_test_corpus]))
         self.assertTrue(all([type(token) == str for sent in unjoined_test_corpus for token in sent]))
+
+
+class VocabFileTest(unittest.TestCase):
+    ...  # TODO
 
 
 class NumpyTest(unittest.TestCase):
