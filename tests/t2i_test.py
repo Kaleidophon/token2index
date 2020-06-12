@@ -173,7 +173,7 @@ class TypeConsistencyTest(unittest.TestCase):
 
         self.assertEqual(type(indexed_test_corpus), list)
         self.assertTrue(all([type(sent) == list for sent in indexed_test_corpus]))
-        self.assertTrue(all([type(idx) == int for sent in test_corpus for idx in sent]))
+        self.assertTrue(all([type(idx) == int for sent in indexed_test_corpus for idx in sent]))
 
         # Check un-indexing consistency for a list of sentences
         unindexed_test_corpus = self.t2i.unindex(indexed_test_corpus)

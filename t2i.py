@@ -5,9 +5,11 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 
 import abc
 from collections import defaultdict
-from typing import Dict, List, Union, Iterable, Optional
+from functools import wraps
+from typing import Dict, List, Union, Iterable, Optional, Callable, Any
 
 # Custom types
+# TODO: More fine-grained types after implementing decorators
 Corpus = Union[str, Iterable[str]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
@@ -16,12 +18,15 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - Proper doc
 # - __repr__
 # - type checks / exceptions
-# - More elegant and consistent handling of sequence vs. sequence of sequences with decorator?
 # - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
-# - Add option to not create new entries for unknown words
+# - Add option to not create new entries for unknown words to limit memory size
 # - Build documentation
 # - Write README
 # - Polishing, fancy README tags
+# - GitHub repo description
+# - Release on PIP
+# - Release to i-machine-think
+# - General release
 
 
 class IncrementingDefaultdict(dict):
@@ -66,6 +71,38 @@ class T2IMeta(defaultdict, abc.ABC):
     @abc.abstractmethod
     def __call__(self, corpus: Corpus, delimiter: str):
         ...
+
+
+def indexing_consistency(func: Callable) -> Callable:
+    # TODO: Docstrings
+    @wraps(func)
+    def with_indexing_consistency(self: T2IMeta, corpus: Corpus, *args, **kwargs) -> IndexedCorpus:
+        if type(corpus) == str:
+            corpus = [corpus]
+            indexed_corpus = func(self, corpus, *args, **kwargs)
+
+            return indexed_corpus[0]
+
+        else:
+            return func(self, corpus, *args, **kwargs)
+
+    return with_indexing_consistency
+
+
+def unindexing_consistency(func: Callable) -> Callable:
+    # TODO: Docstrings
+    @wraps(func)
+    def with_unindexing_consistency(self: T2IMeta, indexed_corpus: IndexedCorpus, *args, **kwargs) -> Corpus:
+        if all([type(el) == int for el in indexed_corpus]):
+            indexed_corpus = [indexed_corpus]
+            unindexed_corpus = func(self, indexed_corpus, *args, **kwargs)
+
+            return unindexed_corpus[0]
+
+        else:
+            return func(self, indexed_corpus, *args, **kwargs)
+
+    return with_unindexing_consistency
 
 
 class T2I(T2IMeta):
@@ -137,6 +174,7 @@ class T2I(T2IMeta):
 
         return dict(t2i)
 
+    @indexing_consistency
     def index(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
@@ -145,15 +183,13 @@ class T2I(T2IMeta):
         """
         return self.__call__(corpus, delimiter=delimiter)
 
+    @unindexing_consistency
     def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " ") -> Corpus:
         """
         Convert indices back to their original words.
 
         @TODO: Docstring
         """
-        if type(indexed_corpus[0]) == int:
-            indexed_corpus = [indexed_corpus]  # Avoid code redundancy in case of single string
-
         corpus = []
         for sequence in indexed_corpus:
             tokens = list(map(self.i2t.__getitem__, sequence))
@@ -163,23 +199,21 @@ class T2I(T2IMeta):
 
             corpus.append(tokens)
 
-        return corpus[0]  # TODO: Make consistent for different types
+        return corpus
 
-    def __call__(self, corpus: Union[str, List[str]], delimiter: str = " ") -> IndexedCorpus:
+    @indexing_consistency
+    def __call__(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
         @TODO: Docstring
         """
-        if type(corpus) == str:
-            corpus = [corpus]  # Avoid code redundancy in case of single string
-
         indexed_corpus = []
 
         for sentence in corpus:
             indexed_corpus.append(list(map(self.t2i.__getitem__, sentence.strip().split(delimiter))))
 
-        return indexed_corpus[0]  # TODO: Make consistent for different types
+        return indexed_corpus
 
     def __repr__(self) -> str:
         """ Return a string representation of the T2I object. """
