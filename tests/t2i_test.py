@@ -3,7 +3,6 @@ Unit tests for T2I class.
 """
 
 # STD
-from typing import Iterable
 import unittest
 
 # PROJECT
@@ -64,8 +63,6 @@ class IndexingTest(unittest.TestCase):
         indexed_test_sentence = [0, 1, 2, 9, 4]
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
-
-        # TODO: Test seed index with arbitrary indices
 
     def test_delimiter_indexing(self):
         """
@@ -195,6 +192,7 @@ class TypeConsistencyTest(unittest.TestCase):
 
 
 class VocabFileTest(unittest.TestCase):
+    # TODO: Test seed index with arbitrary indices
     ...  # TODO
 
 

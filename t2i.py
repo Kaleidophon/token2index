@@ -9,7 +9,6 @@ from functools import wraps
 from typing import Dict, Union, Iterable, Optional, Callable, Any, Hashable
 
 # Custom types
-Index = Dict[str, int]
 Corpus = Union[str, Iterable[str]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
@@ -28,12 +27,16 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - General release
 
 
-class IncrementingDefaultdict(dict):
+class Index(dict):
     """
     (Technically) A defaultdict where the value return value for an unknown key is the number of entries. However, it
     doesn't inherit from defaultdict, because functions returning the value for missing keys can only return a constant
     value. In this case, after every lookup of a new token, this value for an unknown is incremented by one.
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.highest_idx = max(sorted(self.values())[-1], len(self)) if len(self) > 0 else 0
+
     def __getitem__(self, key: Hashable) -> Any:
         """
         Return value corresponding to key. If key doesn't exist yet, return CURRENT size of defaultdict.
@@ -49,7 +52,8 @@ class IncrementingDefaultdict(dict):
             Value associated key or current length of dict in case of a new key.
         """
         if key not in self:
-            self[key] = len(self)  # TODO: Replace len with largest index in case of arbitrary indices from seed_index
+            self[key] = self.highest_idx
+            self.highest_idx += 1
 
         return super().__getitem__(key)
 
@@ -255,44 +259,44 @@ class T2I(T2IMeta):
     can be mapped to the tokens' assigned indices. There are special tokens for the end of a sentence (eos_token) and
     for tokens that were not added to the index during the build phase (unk_token).
     """
-    def __init__(self, t2i: Index, unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
+    def __init__(self, index: Index, unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
         """
         Initialize the T2I class.
 
         Parameters
         ----------
-        t2i:Index
+        index:Index
             Dictionary mapping from tokens to indices.
         unk_token: str
             Token for unknown words not contained in t2i. Default is '<unk>'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
         """
-        # TODO: Assert t2i indices are unique
+        assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
-        if unk_token not in t2i:
-            t2i[unk_token] = len(t2i)
-        if eos_token not in t2i:
-            t2i[eos_token] = len(t2i)
+        if unk_token not in index:
+            index[unk_token] = len(index)
+        if eos_token not in index:
+            index[eos_token] = len(index)
 
-        super().__init__(lambda: self.unk_idx, t2i)
-        self.unk_idx = t2i[unk_token]
+        super().__init__(lambda: self.unk_idx, index)
+        self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
         self.i2t = dict([(v, k) for k, v in self.items()])
         self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
 
     @property
-    def t2i(self) ->Index:
+    def t2i(self) -> Index:
         """
         Return the dictionary mapping tokens to unique indices.
 
         Returns
         -------
-        t2i:Index
+        t2i: Index
             Dictionary mapping from tokens to indices.
         """
-        return self
+        return Index(self)
 
     @staticmethod
     def build(corpus: Corpus, delimiter: str = " ", unk_token: str = "<unk>", eos_token: str = "<eos>") -> T2IMeta:
@@ -335,14 +339,14 @@ class T2I(T2IMeta):
         t2i: T2I
             New T2I object.
         """
-        raw_t2i = T2I._create_index(corpus, delimiter, seed_index=dict(self))
+        raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self))
 
         t2i = T2I(raw_t2i, self.unk_token, self.eos_token)
 
         return t2i
 
     @staticmethod
-    def _create_index(corpus: Corpus, delimiter: str = " ", seed_index: Optional[Index] = None) ->Index:
+    def _create_index(corpus: Corpus, delimiter: str = " ", index: Optional[Index] = None) -> Index:
         """
         Create a simple dictionary, mapping every type in a Corpus to a unique index.
 
@@ -352,7 +356,7 @@ class T2I(T2IMeta):
             Corpus that is being used to build or extend the index.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
-        seed_index: dict
+        index: dict
             Index coming from another source that is being extended.
 
         Returns
@@ -360,19 +364,17 @@ class T2I(T2IMeta):
         t2i: Index
             Newly build or extended index, mapping words to indices.
         """
-        if seed_index is None:
-            seed_index = {}
-
-        t2i = IncrementingDefaultdict(seed_index)
+        if index is None:
+            index = Index()
 
         if type(corpus) == str:
             corpus = [corpus]  # Avoid code redundancy in case of single string
 
         for sentence in corpus:
             tokens = sentence.strip().split(delimiter)
-            [t2i[token] for token in tokens]
+            [index[token] for token in tokens]
 
-        return dict(t2i)
+        return index
 
     @indexing_consistency
     def index(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
@@ -445,13 +447,17 @@ class T2I(T2IMeta):
         indexed_corpus = []
 
         for sentence in corpus:
-            indexed_corpus.append(list(map(self.t2i.__getitem__, sentence.strip().split(delimiter))))
+            indexed_corpus.append(list(map(self.__getitem__, sentence.strip().split(delimiter))))
 
         return indexed_corpus
 
     def __missing__(self, key: str) -> int:
         """ Return the unk token index in case of a missing entry. """
         return self.unk_idx
+
+    def __setitem__(self, key: str, value: int) -> None:
+        """ Don't allow to set new indices after class was initialized. """
+        raise NotImplementedError("Setting of new indices new possible after initialization. Use extend() instead.")
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
