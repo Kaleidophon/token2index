@@ -18,7 +18,7 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - type checks / exceptions
 # - Build from vocab file
 # - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
-# - Add option to not create new entries for unknown words to limit memory size
+# - Make it serializable
 # - Build documentation
 # - Write README
 # - Polishing, fancy README tags
@@ -276,7 +276,6 @@ class T2I(T2IMeta):
             t2i[eos_token] = len(t2i)
 
         super().__init__(lambda: self.unk_idx, t2i)
-
         self.unk_idx = t2i[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
@@ -450,7 +449,11 @@ class T2I(T2IMeta):
 
         return indexed_corpus
 
+    def __missing__(self, key: str) -> int:
+        """ Return the unk token index in case of a missing entry. """
+        return self.unk_idx
+
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
         return f"T2I(Size: {len(self.t2i)}, unk_token: {self.unk_token}, eos_token: {self.eos_token}, "\
-                f"{super().__repr__()})"
+               f"{super().__repr__()})"
