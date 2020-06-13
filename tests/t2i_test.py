@@ -3,6 +3,9 @@ Unit tests for T2I class.
 """
 
 # STD
+import os
+import random
+import string
 import unittest
 
 # PROJECT
@@ -200,19 +203,89 @@ class TypeConsistencyTest(unittest.TestCase):
 
 
 class VocabFileTest(unittest.TestCase):
-    # TODO: Test seed index with arbitrary indices
-    ...  # TODO
+    """
+    Test building a T2I object from a vocab file.
+    """
+    def setUp(self):
+        num_tokens = 30
+        self.tokens = [self._random_str(random.randint(3, 8)) for _ in range(num_tokens)]
+
+        # First vocab file format: One token per line
+        self.vocab_path1 = "vocab1.txt"
+        with open(self.vocab_path1, "w") as vocab_file1:
+            vocab_file1.write("\n".join(self.tokens))
+
+        # Second vocab file format: Token and index, separated by tab
+        self.vocab_path2 = "vocab2.csv"
+        self.indices2 = list(range(num_tokens))
+        random.shuffle(self.indices2)
+        with open(self.vocab_path2, "w") as vocab_file2:
+            vocab_file2.write(
+                "\n".join([f"{token}\t{index}" for token, index in zip(self.tokens, self.indices2)])
+            )
+
+        # Second vocab file format, this time with higher indices
+        self.vocab_path3 = "vocab3.csv"
+        self.indices3 = list(range(0, num_tokens, 2))
+        random.shuffle(self.indices3)
+        with open(self.vocab_path3, "w") as vocab_file3:
+            vocab_file3.write(
+                "\n".join([f"{token}\t{index}" for token, index in zip(self.tokens, self.indices3)])
+            )
+
+        # Second vocab file format, but with different delimiter
+        self.vocab_path4 = "vocab4.csv"
+        with open(self.vocab_path4, "w") as vocab_file4:
+            vocab_file4.write(
+                "\n".join([f"{token}###{index}" for token, index in zip(self.tokens, self.indices2)])
+            )
+
+    def tearDown(self):
+        os.remove(self.vocab_path1)
+        os.remove(self.vocab_path2)
+        os.remove(self.vocab_path3)
+        os.remove(self.vocab_path4)
+
+    @staticmethod
+    def _random_str(length: int) -> str:
+        """ Return a random, lowercase string of a certain length. """
+        return "".join([random.choice(string.ascii_lowercase) for _ in range(length)])
+
+    def test_building_from_file(self):
+        """
+        Test building a T2I object from a vocab file.
+        """
+        # First vocab file format: One token per line
+        t2i1 = T2I.from_file(self.vocab_path1)
+        self.assertTrue([t2i1[token] == idx for token, idx in zip(self.tokens, range(len(self.tokens)))])
+
+        # Second vocab file format: Token and index, separated by tab
+        t2i2 = T2I.from_file(self.vocab_path2)
+        self.assertTrue([t2i2[token] == idx for token, idx in zip(self.tokens, self.indices2)])
+
+        # Second vocab file format, this time with higher indices
+        t2i3 = T2I.from_file(self.vocab_path3)
+        self.assertTrue([t2i3[token] == idx for token, idx in zip(self.tokens, self.indices3)])
+
+        # Second vocab file format, but with different delimiter
+        t2i4 = T2I.from_file(self.vocab_path4, delimiter="###")
+        self.assertTrue([t2i4[token] == idx for token, idx in zip(self.tokens, self.indices2)])
+
+    def test_correct_indexing(self):
+        """
+        Test if indexing of new tokens is done correctly if the indices in the T2I class so far are arbitrary. In that
+        case, indexing should be continued from the highest index.
+        """
+        t2i = T2I.from_file(self.vocab_path3)
+        highest_index = max(t2i.values())
+        test_sent = "These are definitely new non-random tokens ."
+
+        t2i = t2i.extend(test_sent)
+        
+        self.assertTrue(all([t2i[token] > highest_index for token in test_sent.split(" ")]))
 
 
-class NumpyTest(unittest.TestCase):
-    ...  # TODO
-
-
-class PyTorchTest(unittest.TestCase):
-    ...  # TODO
-
-
-class TensorflowTest(unittest.TestCase):
+class IndexTest(unittest.TestCase):
     ...  # TODO
 
 

@@ -4,6 +4,7 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 """
 
 import abc
+import codecs
 from collections import defaultdict
 from functools import wraps
 from typing import Dict, Union, Iterable, Optional, Callable, Any, Hashable
@@ -16,7 +17,6 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # TODO
 # - type checks / exceptions
 # - Build from vocab file
-# - Make compatible with numpy arrays / pytorch tensors / tensorflow tensors
 # - Make it serializable
 # - Build documentation
 # - Write README
@@ -35,7 +35,6 @@ class Index(dict):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.highest_idx = max(sorted(self.values())[-1], len(self)) if len(self) > 0 else 0
 
     def __getitem__(self, key: Hashable) -> Any:
         """
@@ -53,9 +52,15 @@ class Index(dict):
         """
         if key not in self:
             self[key] = self.highest_idx
-            self.highest_idx += 1
 
         return super().__getitem__(key)
+
+    @property
+    def highest_idx(self) -> int:
+        """
+        Return the highest index in the index.
+        """
+        return max(max(self.values()) + 1, len(self)) if len(self) > 0 else 0
 
 
 class T2IMeta(defaultdict, abc.ABC):
@@ -101,7 +106,7 @@ class T2IMeta(defaultdict, abc.ABC):
         ...
 
     @abc.abstractmethod
-    def extend(self, corpus: Corpus, delimiter: str):
+    def extend(self, corpus: Corpus, delimiter: str = ' '):
         """
         Extend an existing T2I with tokens from a new tokens and build indices for them.
 
@@ -259,7 +264,7 @@ class T2I(T2IMeta):
     can be mapped to the tokens' assigned indices. There are special tokens for the end of a sentence (eos_token) and
     for tokens that were not added to the index during the build phase (unk_token).
     """
-    def __init__(self, index: Index, unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
+    def __init__(self, index: Union[Dict[str, int], Index], unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
         """
         Initialize the T2I class.
 
@@ -275,9 +280,10 @@ class T2I(T2IMeta):
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
         if unk_token not in index:
-            index[unk_token] = len(index)
+            index[unk_token] = max(max(index.values()) + 1, len(index))
+
         if eos_token not in index:
-            index[eos_token] = len(index)
+            index[eos_token] = max(max(index.values()) + 1, len(index))
 
         super().__init__(lambda: self.unk_idx, index)
         self.unk_idx = index[unk_token]
@@ -322,6 +328,47 @@ class T2I(T2IMeta):
         t2i = T2I._create_index(corpus, delimiter)
 
         return T2I(t2i, unk_token, eos_token)
+
+    @staticmethod
+    def from_file(vocab_path: str, encoding: str = "utf-8", delimiter: str = "\t") -> T2IMeta:
+        """
+        Generate a T2I object from a file. This file can have two possible formats:
+
+        1. One token per line (in which case the index is the line number)
+        2. A token and its corresponding index, separated by some delimiter (default is "\t"):
+
+        Parameters
+        ----------
+        vocab_path: str
+            Path to vocabulary file.
+        encoding: str
+            Encoding of vocabulary file (default is 'utf-8').
+        delimiter: str
+            Delimiter in case the format is token <delimiter> index. Default is '\t'.
+
+        Returns
+        -------
+
+        """
+        # TODO: Check file format?
+
+        with codecs.open(vocab_path, "r", encoding) as vocab_file:
+            entries = [line.strip() for line in vocab_file.readlines()]
+
+            # Infer file format
+            # Format token <delimiter> index
+            if len(entries[0].split(delimiter)) == 2:
+                index = {}
+
+                for entry in entries:
+                    token, idx = entry.split(delimiter)
+                    index[token] = int(idx)
+
+            # Format: One token per line
+            else:
+                index = dict(zip(entries, range(len(entries))))
+
+        return T2I(index)
 
     def extend(self, corpus: Corpus, delimiter: str = " ") -> T2IMeta:
         """
