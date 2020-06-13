@@ -102,6 +102,14 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.index(self.test_corpus5b), self.indexed_test_corpus45)
         self._assert_indexing_consistency(self.test_corpus5, t2i)
 
+    def test_immutability(self):
+        """
+        Test whether the T2I stays immutable after object init.
+        """
+        t2i = T2I.build(self.test_corpus1)
+        with self.assertRaises(NotImplementedError):
+            t2i["banana"] = 66
+
 
 class TypeConsistencyTest(unittest.TestCase):
     """
