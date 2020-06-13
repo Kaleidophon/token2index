@@ -208,7 +208,7 @@ class VocabFileTest(unittest.TestCase):
     """
     def setUp(self):
         num_tokens = 30
-        self.tokens = [self._random_str(random.randint(3, 8)) for _ in range(num_tokens)]
+        self.tokens = [random_str(random.randint(3, 8)) for _ in range(num_tokens)]
 
         # First vocab file format: One token per line
         self.vocab_path1 = "vocab1.txt"
@@ -246,11 +246,6 @@ class VocabFileTest(unittest.TestCase):
         os.remove(self.vocab_path3)
         os.remove(self.vocab_path4)
 
-    @staticmethod
-    def _random_str(length: int) -> str:
-        """ Return a random, lowercase string of a certain length. """
-        return "".join([random.choice(string.ascii_lowercase) for _ in range(length)])
-
     def test_building_from_file(self):
         """
         Test building a T2I object from a vocab file.
@@ -285,8 +280,33 @@ class VocabFileTest(unittest.TestCase):
         self.assertTrue(all([t2i[token] > highest_index for token in test_sent.split(" ")]))
 
 
+class SerializationTest(unittest.TestCase):
+    """
+    Test saving and loading of a T2I object.
+    """
+    def setUp(self):
+        self.path = "test_t2i.pkl"
+
+    def tearDown(self):
+        os.remove(self.path)
+
+    def test_serialization(self):
+        """ The above. """
+        t2i = T2I.build(" ".join([random_str(random.randint(3, 10)) for _ in range(random.randint(20, 40))]))
+
+        t2i.save(self.path)
+
+        self.assertEqual(T2I.load(self.path), t2i)
+
+
 class IndexTest(unittest.TestCase):
     ...  # TODO
+
+
+def random_str(length: int) -> str:
+    """ Return a random, lowercase string of a certain length. """
+    return "".join([random.choice(string.ascii_lowercase) for _ in range(length)])
+
 
 
 if __name__ == "__main__":

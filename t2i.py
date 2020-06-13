@@ -5,8 +5,8 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 
 import abc
 import codecs
-from collections import defaultdict
 from functools import wraps
+import pickle
 from typing import Dict, Union, Iterable, Optional, Callable, Any, Hashable
 
 # Custom types
@@ -16,8 +16,6 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 # TODO
 # - type checks / exceptions
-# - Build from vocab file
-# - Make it serializable
 # - Build documentation
 # - Write README
 # - Polishing, fancy README tags
@@ -63,7 +61,7 @@ class Index(dict):
         return max(max(self.values()) + 1, len(self)) if len(self) > 0 else 0
 
 
-class T2IMeta(defaultdict, abc.ABC):
+class T2IMeta(dict, abc.ABC):
     """
     T2I superclass, mostly to provide an informative return type annotation for build() and extend() (you cannot
     annotate the return type of a static function with the class it was defined in).
@@ -183,6 +181,17 @@ class T2IMeta(defaultdict, abc.ABC):
         """
         ...
 
+    @abc.abstractmethod
+    def save(self, path: str):
+        """ Save T2I object as pickle. """
+        ...
+
+    @staticmethod
+    @abc.abstractmethod
+    def load(path: str):
+        """ Load serialized T2I object. """
+        ...
+
     def __repr__(self) -> str:
         """ Return a string representation of the core dict inside a T2I object. """
         # This is a way to call the __repr__ function of the grandparent class dict
@@ -285,12 +294,13 @@ class T2I(T2IMeta):
         if eos_token not in index:
             index[eos_token] = max(max(index.values()) + 1, len(index))
 
-        super().__init__(lambda: self.unk_idx, index)
+        super().__init__(index)
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
         self.i2t = dict([(v, k) for k, v in self.items()])
         self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
+        self.pickled = False  # See __setitem__
 
     @property
     def t2i(self) -> Index:
@@ -504,7 +514,30 @@ class T2I(T2IMeta):
 
     def __setitem__(self, key: str, value: int) -> None:
         """ Don't allow to set new indices after class was initialized. """
-        raise NotImplementedError("Setting of new indices new possible after initialization. Use extend() instead.")
+        # TODO: Find a better way to do this
+        # This line is one of the most adventurous line I have ever written and I hate it:
+        # I want to have __setitem__ raise this exception here so that the index cannot be manipulated directly, e.g.
+        # by doing 't2i["hello"] = 46'. However, during loading a serialized version of this object, pickle is using
+        # ___setitem__ to rebuild the T2I object. Thus, if this function raises an error during unpickling and the
+        # object cannot be un-serialized. For some reason, the attribute with the name "pickled" is current being loaded
+        # last, so checking for its existence is an indicator for the progress of the unpickling. Naturally this is not
+        # good code, as I don't know WHY it is loaded last and this behavior might break with new, future attributes.
+        if hasattr(self, "pickled"):
+            raise NotImplementedError("Setting of new indices new possible after initialization. Use extend() instead.")
+
+        else:
+            super().__setitem__(key, value)
+
+    def save(self, path: str) -> None:
+        """ Save T2I object as pickle. """
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(path: str) -> T2IMeta:
+        """ Load serialized T2I object. """
+        with open(path, "rb") as f:
+            return pickle.load(f)
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
