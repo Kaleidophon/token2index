@@ -15,7 +15,9 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 
 # TODO
+# - Update i2t after extend
 # - Make compatible with torchtext vocab
+# - Determine compatibility with Python version
 # - Don't inherit from dict
 # - Index tests
 # - type checks / exceptions
@@ -26,42 +28,6 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - Release on PIP
 # - Release to i-machine-think
 # - General release
-
-
-class Index(dict):
-    """
-    (Technically) A defaultdict where the value return value for an unknown key is the number of entries. However, it
-    doesn't inherit from defaultdict, because functions returning the value for missing keys can only return a constant
-    value. In this case, after every lookup of a new token, this value for an unknown is incremented by one.
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def __getitem__(self, key: Hashable) -> Any:
-        """
-        Return value corresponding to key. If key doesn't exist yet, return CURRENT size of defaultdict.
-
-        Parameters
-        ----------
-        key: Hashable
-            Key to be looked up.
-
-        Returns
-        -------
-        value: Any
-            Value associated key or current length of dict in case of a new key.
-        """
-        if key not in self:
-            self[key] = self.highest_idx
-
-        return super().__getitem__(key)
-
-    @property
-    def highest_idx(self) -> int:
-        """
-        Return the highest index in the index.
-        """
-        return max(max(self.values()) + 1, len(self)) if len(self) > 0 else 0
 
 
 def indexing_consistency(func: Callable) -> Callable:
@@ -132,6 +98,39 @@ def unindexing_consistency(func: Callable) -> Callable:
     return with_unindexing_consistency
 
 
+class Index(dict):
+    """
+    (Technically) A defaultdict where the value return value for an unknown key is the number of entries. However, it
+    doesn't inherit from defaultdict, because functions returning the value for missing keys can only return a constant
+    value. In this case, after every lookup of a new token, this value for an unknown is incremented by one.
+    """
+    def __getitem__(self, key: Hashable) -> Any:
+        """
+        Return value corresponding to key. If key doesn't exist yet, return CURRENT size of defaultdict.
+
+        Parameters
+        ----------
+        key: Hashable
+            Key to be looked up.
+
+        Returns
+        -------
+        value: Any
+            Value associated key or current length of dict in case of a new key.
+        """
+        if key not in self:
+            self[key] = self.highest_idx
+
+        return super().__getitem__(key)
+
+    @property
+    def highest_idx(self) -> int:
+        """
+        Return the highest index in the index.
+        """
+        return max(max(self.values()) + 1, len(self)) if len(self) > 0 else 0
+
+
 class T2I(dict):
     """
     Provides vocab functionality mapping tokens to indices. After building an index, sentences or a corpus of sentences
@@ -165,7 +164,7 @@ class T2I(dict):
         self.eos_token = eos_token
         self.i2t = dict([(v, k) for k, v in self.items()])
         self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
-        self.pickled = False  # See __setitem__
+        self.pickled = None  # See __setitem__
 
     @property
     def t2i(self) -> Index:
@@ -205,7 +204,8 @@ class T2I(dict):
         return T2I(t2i, unk_token, eos_token)
 
     @staticmethod
-    def from_file(vocab_path: str, encoding: str = "utf-8", delimiter: str = "\t") -> T2I:
+    def from_file(vocab_path: str, encoding: str = "utf-8", delimiter: str = "\t", unk_token: str = "<unk>",
+                  eos_token: str = "<eos>") -> T2I:
         """
         Generate a T2I object from a file. This file can have two possible formats:
 
@@ -223,7 +223,8 @@ class T2I(dict):
 
         Returns
         -------
-
+        t2i: T2I
+            T2I object built from vocal file.
         """
         # TODO: Check file format?
 
@@ -243,7 +244,7 @@ class T2I(dict):
             else:
                 index = dict(zip(entries, range(len(entries))))
 
-        return T2I(index)
+        return T2I(index, unk_token, eos_token)
 
     def extend(self, corpus: Corpus, delimiter: str = " ") -> T2I:
         """
@@ -380,6 +381,8 @@ class T2I(dict):
     def __setitem__(self, key: str, value: int) -> None:
         """ Don't allow to set new indices after class was initialized. """
         # TODO: Find a better way to do this
+        # TODO: Fix this by not inheriting from dict and instead using this as a wrapper class and not implementing
+        # TODO: __setitem__()
         # This line is one of the most adventurous line I have ever written and I hate it:
         # I want to have __setitem__ raise this exception here so that the index cannot be manipulated directly, e.g.
         # by doing 't2i["hello"] = 46'. However, during loading a serialized version of this object, pickle is using
@@ -396,13 +399,19 @@ class T2I(dict):
     def save(self, path: str) -> None:
         """ Save T2I object as pickle. """
         with open(path, "wb") as f:
+            self.pickled = True
             pickle.dump(self, f)
 
     @staticmethod
     def load(path: str) -> T2I:
         """ Load serialized T2I object. """
         with open(path, "rb") as f:
-            return pickle.load(f)
+            t2i = pickle.load(f)
+
+        return t2i
+
+    def __setstate__(self, state):
+        self.pickled = False
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """

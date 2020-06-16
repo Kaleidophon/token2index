@@ -67,6 +67,8 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
 
+        # TODO: Test that i2t was updated
+
     def test_delimiter_indexing(self):
         """
         Test indexing with different delimiter.
@@ -250,6 +252,7 @@ class VocabFileTest(unittest.TestCase):
         """
         Test building a T2I object from a vocab file.
         """
+        # TODO: Test assignment of <unk> and <eos>
         # First vocab file format: One token per line
         t2i1 = T2I.from_file(self.vocab_path1)
         self.assertTrue([t2i1[token] == idx for token, idx in zip(self.tokens, range(len(self.tokens)))])
@@ -278,6 +281,8 @@ class VocabFileTest(unittest.TestCase):
         t2i = t2i.extend(test_sent)
         
         self.assertTrue(all([t2i[token] > highest_index for token in test_sent.split(" ")]))
+
+        # TODO: Test updating of i2t
 
 
 class SerializationTest(unittest.TestCase):
