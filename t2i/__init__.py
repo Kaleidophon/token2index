@@ -5,13 +5,20 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 
 from __future__ import annotations
 import codecs
-from functools import wraps
+import sys
 import pickle
-from typing import Dict, Union, Iterable, Optional, Callable, Any, Hashable
+from typing import Dict, Union, Iterable, Optional, Any, Hashable
+
+# LIB
+from t2i.decorators import indexing_consistency, unindexing_consistency
 
 # Custom types
 Corpus = Union[str, Iterable[str]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
+
+# Restrict direct imports from t2i.decorators module
+sys.modules["t2i.decorators"] = None
+__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 
 
 # TODO
@@ -28,74 +35,6 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # - Release on PIP
 # - Release to i-machine-think
 # - General release
-
-
-def indexing_consistency(func: Callable) -> Callable:
-    """
-    Make T2I.index() and T2I.__call__() agnostic to whether the input is a string or a list of strings, i.e.
-
-    str -> List[int]
-    List[str] -> List[List[str]]
-
-    This is achieved by simply putting a single sentence into a list. This way, the above methods always process lists
-    of lists.
-
-    Parameters
-    ----------
-    func: Callable
-        Indexing function to be decorated.
-
-    Returns
-    -------
-    func: Callable
-        Decorated indexing function.
-    """
-    @wraps(func)
-    def with_indexing_consistency(self: T2I, corpus: Corpus, *args, **kwargs) -> IndexedCorpus:
-        if type(corpus) == str:
-            corpus = [corpus]
-            indexed_corpus = func(self, corpus, *args, **kwargs)
-
-            return indexed_corpus[0]
-
-        else:
-            return func(self, corpus, *args, **kwargs)
-
-    return with_indexing_consistency
-
-
-def unindexing_consistency(func: Callable) -> Callable:
-    """
-    Make T2I.unindex() agnostic to whether the input is a list of ints or a list of lists of ints, i.e.
-
-    List[int] -> str or List[str]
-    List[List[int]] -> List[str]
-
-    This is achieved by simply putting a single indexed sentence into a list. This way, the above methods always process
-    lists of lists.
-
-    Parameters
-    ----------
-    func: Callable
-        Indexing function to be decorated.
-
-    Returns
-    -------
-    func: Callable
-        Decorated indexing function.
-    """
-    @wraps(func)
-    def with_unindexing_consistency(self: T2I, indexed_corpus: IndexedCorpus, *args, **kwargs) -> Corpus:
-        if all([type(el) == int for el in indexed_corpus]):
-            indexed_corpus = [indexed_corpus]
-            unindexed_corpus = func(self, indexed_corpus, *args, **kwargs)
-
-            return unindexed_corpus[0]
-
-        else:
-            return func(self, indexed_corpus, *args, **kwargs)
-
-    return with_unindexing_consistency
 
 
 class Index(dict):
@@ -153,10 +92,10 @@ class T2I(dict):
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
         if unk_token not in index:
-            index[unk_token] = max(max(index.values()) + 1, len(index))
+            index[unk_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
 
         if eos_token not in index:
-            index[eos_token] = max(max(index.values()) + 1, len(index))
+            index[eos_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
 
         super().__init__(index)
         self.unk_idx = index[unk_token]

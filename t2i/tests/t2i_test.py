@@ -305,7 +305,30 @@ class SerializationTest(unittest.TestCase):
 
 
 class IndexTest(unittest.TestCase):
-    ...  # TODO
+    ...
+    # TODO: Test Index class
+    # TODO: Test init of T2I class with index, in particular
+    #       - Using an empty index
+    #       - Using an index missing the unk and / or eos token
+    #       - Using the index with existing unk and / or eos token
+    #       - Using the index with a custom unk and / ors eos token
+
+
+class ModuleImportTest(unittest.TestCase):
+    """
+    Test the behavior of certain module imports.
+    """
+    def test_import_restrictions(self):
+        """
+        Decorators from t2i.decorators shouldn't be exposed and available for importing for user of the package, so make
+        sure that trying to import those directly results in exceptions. Unfortunately, they are still available
+        by importing the import from t2i directly (dumb).
+        """
+        with self.assertRaises(ModuleNotFoundError):
+            from t2i.decorators import indexing_consistency
+
+        with self.assertRaises(ModuleNotFoundError):
+            from t2i.decorators import unindexing_consistency
 
 
 def random_str(length: int) -> str:
