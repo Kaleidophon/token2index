@@ -11,6 +11,9 @@ install:
   - pip -q install -r requirements.txt
   # - pip install -e .
 
+  # dev dependencies
+  - pip install coverage
+
 script:
   # Unit test
   - python -m unittest discover -v
