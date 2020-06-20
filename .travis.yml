@@ -11,7 +11,7 @@ python:
 # command to install dependencies
 install:
   - pip install -U pip
-  - pip -q install -r requirements.txt
+  # - pip -q install -r requirements.txt
   # - pip install -e .
 
   # dev dependencies

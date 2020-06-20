@@ -27,7 +27,10 @@ __version__ = "0.7.1"
 
 
 # TODO
-# - Counter / min_freq functionalities
+# - torchtext functionalities
+#   - max_size / counter
+#   - special_tokens -> specials
+#   - max_size
 # - Don't inherit from dict
 # - type checks / exceptions
 # - Missing unittests
