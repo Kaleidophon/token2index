@@ -1,4 +1,4 @@
-# :zap::card_index: token2index: A lightweight library for token indexing. 
+# :zap::card_index: token2index: A lightweight library for token indexing
 
 [![Build](https://travis-ci.org/Kaleidophon/token2index.svg?branch=master)]()
 [![Coverage Status](https://coveralls.io/repos/github/Kaleidophon/token2index/badge.svg?branch=master)](https://coveralls.io/github/Kaleidophon/token2index?branch=master)

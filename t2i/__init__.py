@@ -30,7 +30,6 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 # - type checks / exceptions
 # - Build documentation
 # - Write README
-# - Polishing, fancy README tags
 # - GitHub repo description
 # - Release on PIP
 # - Release to i-machine-think
