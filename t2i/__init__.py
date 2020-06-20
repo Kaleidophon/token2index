@@ -137,7 +137,7 @@ class T2I(dict):
         delimiter: str = " ",
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
-        *special_tokens: Tuple[str],
+        *special_tokens: Tuple[str]
     ):
         """
         Build token index from scratch on a corpus.
@@ -171,7 +171,7 @@ class T2I(dict):
         delimiter: str = "\t",
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
-        *special_tokens: Tuple[str],
+        *special_tokens: Tuple[str]
     ):
         """
         Generate a T2I object from a file. This file can have two possible formats:
