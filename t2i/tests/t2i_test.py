@@ -11,8 +11,16 @@ import unittest
 # PROJECT
 from t2i import T2I, Index, Corpus
 
-
-# TODO: Test behavior for unexpected input types
+# TODO: Missing tests
+#   - Test behavior for unexpected input types
+#   - Test usage of arbitrary special tokens
+#   - Test assignment of <unk> and <eos> when building vocab from file
+#   - Test updating of i2t after extending
+#   - Test init of T2I class with index, in particular
+#       - Using an empty index
+#       - Using an index missing the unk and / or eos token
+#       - Using the index with existing unk and / or eos token
+#       - Using the index with a custom unk and / or eos token
 
 
 class IndexingTest(unittest.TestCase):
@@ -288,7 +296,6 @@ class VocabFileTest(unittest.TestCase):
         """
         Test building a T2I object from a vocab file.
         """
-        # TODO: Test assignment of <unk> and <eos>
         # First vocab file format: One token per line
         t2i1 = T2I.from_file(self.vocab_path1)
         self.assertTrue(
@@ -330,8 +337,6 @@ class VocabFileTest(unittest.TestCase):
         self.assertTrue(
             all([t2i[token] > highest_index for token in test_sent.split(" ")])
         )
-
-        # TODO: Test updating of i2t
 
 
 class SerializationTest(unittest.TestCase):
@@ -390,12 +395,6 @@ class IndexTest(unittest.TestCase):
 
         self.assertEqual(len(index), num_tokens + len(high_indices))
         self.assertEqual(index.highest_idx, max(high_indices))
-
-    # TODO: Test init of T2I class with index, in particular
-    #       - Using an empty index
-    #       - Using an index missing the unk and / or eos token
-    #       - Using the index with existing unk and / or eos token
-    #       - Using the index with a custom unk and / ors eos token
 
 
 class ModuleImportTest(unittest.TestCase):

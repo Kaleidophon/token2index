@@ -7,7 +7,7 @@ from __future__ import annotations
 import codecs
 import sys
 import pickle
-from typing import Dict, Union, Iterable, Optional, Any, Hashable
+from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple
 
 # LIB
 from t2i.decorators import indexing_consistency, unindexing_consistency
@@ -25,7 +25,6 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 # - Update i2t after extend
 # - Make compatible with torchtext vocab
 # - Determine compatibility with Python version
-# - Setup black pre-commit hook
 # - Don't inherit from dict
 # - Index tests
 # - type checks / exceptions
@@ -79,12 +78,12 @@ class T2I(dict):
     for tokens that were not added to the index during the build phase (unk_token).
     """
 
-    # TODO: Allow arbitrary special tokens?
     def __init__(
         self,
         index: Union[Dict[str, int], Index],
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
+        *special_tokens: Tuple[str],
     ) -> None:
         """
         Initialize the T2I class.
@@ -97,18 +96,15 @@ class T2I(dict):
             Token for unknown words not contained in t2i. Default is '<unk>'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
+        special_tokens: Tuple[str]
+            An arbitrary number of additional special tokens, given as unnamed arguments.
         """
         assert len(set(index.values())) == len(
             index.values()
         ), "Index must only contain unique keys."
 
-        if unk_token not in index:
-            index[unk_token] = (
-                max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
-            )
-
-        if eos_token not in index:
-            index[eos_token] = (
+        for special_token in [unk_token, eos_token] + list(special_tokens):
+            index[special_token] = (
                 max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
             )
 
@@ -120,6 +116,11 @@ class T2I(dict):
         self.i2t[
             self[self.unk_token]
         ] = self.unk_token  # Make sure there is always an index associated with <unk>
+
+        # torchtext vocab compatability
+        self.itos = self.i2t
+        self.stoi = self.t2i
+
         self.pickled = None  # See __setitem__
 
     @property
