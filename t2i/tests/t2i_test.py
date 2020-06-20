@@ -16,7 +16,7 @@ from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 #   - Test behavior for unexpected input types
 #   - Test assignment of <unk> and <eos> when building vocab from file
 #   - Test reading in incorrect vocab files
-#   - Test counter / min_freq functionalities
+#   - Test counter / min_freq feature
 #   - Test max_size feature
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index

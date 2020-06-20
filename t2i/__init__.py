@@ -4,6 +4,7 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 """
 
 import codecs
+from collections import Counter
 import sys
 import pickle
 from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple, Iterator
@@ -23,14 +24,10 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
-__version__ = "0.7.1"
+__version__ = "0.9.0"
 
 
 # TODO
-# - torchtext functionalities
-#   - max_size / counter
-#   - special_tokens -> specials
-#   - max_size
 # - type checks / exceptions
 # - Missing unittests
 # - Build documentation
@@ -85,6 +82,9 @@ class T2I:
     def __init__(
         self,
         index: Optional[Union[Dict[str, int], Index]] = None,
+        counter: Optional[Counter] = None,
+        max_size: Optional[int] = None,
+        min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         special_tokens: Tuple[str, ...] = tuple(),
@@ -96,6 +96,12 @@ class T2I:
         ----------
         index: Optional[Union[Dict[str, int], Index]]
             Dictionary mapping from tokens to indices.
+        counter: Optional[Counter]
+            Counter with token frequencies in corpus. Default is None.
+        max_size: Optional[int]
+            Maximum size of T2I index. Default is None, which means no maximum size.
+        min_freq: int
+            Minimum frequency of a token for it to be included in the index. Default is 1.
         unk_token: str
             Token for unknown words not contained in t2i. Default is 'STD_UNK'.
         eos_token: str
@@ -114,7 +120,19 @@ class T2I:
         for special_token in [unk_token, eos_token] + list(special_tokens):
             index[special_token] = index.highest_idx + 1
 
-        self._index = index
+        # Build index
+        self._index = {}
+        for token, idx in index.items():
+            if max_size is not None:
+                if len(self._index) == max_size:
+                    break
+
+            if counter is None or counter[token] >= min_freq:
+                self._index[token] = idx
+
+        self.counter = counter
+        self.max_size = max_size
+        self.min_freq = min_freq
         self.special_tokens = special_tokens
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
@@ -124,8 +142,6 @@ class T2I:
         # torchtext vocab compatibility
         self.itos = self.i2t
         self.stoi = self.t2i
-
-        self.pickled = None  # See __setitem__
 
     def _build_i2t(self) -> None:
         """
@@ -150,6 +166,9 @@ class T2I:
     def build(
         corpus: Corpus,
         delimiter: str = " ",
+        counter: Optional[Counter] = None,
+        max_size: Optional[int] = None,
+        min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         special_tokens: Tuple[str, ...] = tuple(),
@@ -163,6 +182,12 @@ class T2I:
             Corpus that is being used to build the index.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
+        counter: Optional[Counter]
+            Counter with token frequencies in corpus. Default is None.
+        max_size: Optional[int]
+            Maximum size of T2I index. Default is None, which means no maximum size.
+        min_freq: int
+            Minimum frequency of a token for it to be included in the index. Default is 1.
         unk_token: str
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
@@ -177,13 +202,16 @@ class T2I:
         """
         t2i = T2I._create_index(corpus, delimiter)
 
-        return T2I(t2i, unk_token, eos_token, special_tokens)
+        return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
 
     @staticmethod
     def from_file(
         vocab_path: str,
         encoding: str = "utf-8",
         delimiter: str = "\t",
+        counter: Optional[Counter] = None,
+        max_size: Optional[int] = None,
+        min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         special_tokens: Tuple[str, ...] = tuple(),
@@ -202,6 +230,12 @@ class T2I:
             Encoding of vocabulary file (default is 'utf-8').
         delimiter: str
             Delimiter in case the format is token <delimiter> index. Default is '\t'.
+        counter: Optional[Counter]
+            Counter with token frequencies in corpus. Default is None.
+        max_size: Optional[int]
+            Maximum size of T2I index. Default is None, which means no maximum size.
+        min_freq: int
+            Minimum frequency of a token for it to be included in the index. Default is 1.
         unk_token: str
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
@@ -248,7 +282,7 @@ class T2I:
             else:
                 raise ValueError("Vocab file has an unrecognized format.")
 
-        return T2I(index, unk_token, eos_token, special_tokens)
+        return T2I(index, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
 
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
@@ -266,9 +300,9 @@ class T2I:
         t2i: T2I
             New T2I object.
         """
-        raw_t2i = T2I._create_index(corpus, delimiter, index=self._index)
+        raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self._index))
 
-        t2i = T2I(raw_t2i, self.unk_token, self.eos_token, self.special_tokens)
+        t2i = T2I(raw_t2i, unk_token=self.unk_token, eos_token=self.eos_token, special_tokens=self.special_tokens)
 
         return t2i
 
