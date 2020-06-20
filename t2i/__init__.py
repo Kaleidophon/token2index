@@ -21,7 +21,6 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 
 
 # TODO
-# - Determine compatibility with Python version
 # - Don't inherit from dict
 # - Index tests
 # - type checks / exceptions
