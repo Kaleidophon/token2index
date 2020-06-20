@@ -3,7 +3,6 @@ Define a lightweight data structure to store and look up the indices belonging t
 Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose) W2I class.
 """
 
-from __future__ import annotations
 import codecs
 import sys
 import pickle
@@ -145,7 +144,7 @@ class T2I(dict):
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
         *special_tokens: Tuple[str],
-    ) -> T2I:
+    ):
         """
         Build token index from scratch on a corpus.
 
@@ -179,7 +178,7 @@ class T2I(dict):
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
         *special_tokens: Tuple[str],
-    ) -> T2I:
+    ):
         """
         Generate a T2I object from a file. This file can have two possible formats:
 
@@ -226,7 +225,7 @@ class T2I(dict):
 
         return T2I(index, unk_token, eos_token, *special_tokens)
 
-    def extend(self, corpus: Corpus, delimiter: str = " ") -> T2I:
+    def extend(self, corpus: Corpus, delimiter: str = " "):
         """
         Extend an existing T2I with tokens from a new tokens and build indices for them.
 
@@ -391,7 +390,7 @@ class T2I(dict):
             pickle.dump(self, f)
 
     @staticmethod
-    def load(path: str) -> T2I:
+    def load(path: str):
         """ Load serialized T2I object. """
         with open(path, "rb") as f:
             t2i = pickle.load(f)
@@ -403,7 +402,6 @@ class T2I(dict):
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
-        return (
-            f"T2I(Size: {len(self.t2i)}, unk_token: {self.unk_token}, eos_token: {self.eos_token}, "
-            f"{dict.__repr__(self)})"
+        return "T2I(Size: {}, unk_token: {}, eos_token: {}, {})".format(
+            len(self.t2i), self.unk_token, self.eos_token, dict.__repr__(self)
         )

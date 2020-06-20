@@ -16,6 +16,7 @@ from t2i import T2I, Index, Corpus
 #   - Test usage of arbitrary special tokens
 #   - Test assignment of <unk> and <eos> when building vocab from file
 #   - Test updating of i2t after extending
+#   - Test __repr__
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index
 #       - Using an index missing the unk and / or eos token
@@ -254,7 +255,7 @@ class VocabFileTest(unittest.TestCase):
             vocab_file2.write(
                 "\n".join(
                     [
-                        f"{token}\t{index}"
+                        "{}\t{}".format(token, index)
                         for token, index in zip(self.tokens, self.indices2)
                     ]
                 )
@@ -268,7 +269,7 @@ class VocabFileTest(unittest.TestCase):
             vocab_file3.write(
                 "\n".join(
                     [
-                        f"{token}\t{index}"
+                        "{}\t{}".format(token, index)
                         for token, index in zip(self.tokens, self.indices3)
                     ]
                 )
@@ -280,7 +281,7 @@ class VocabFileTest(unittest.TestCase):
             vocab_file4.write(
                 "\n".join(
                     [
-                        f"{token}###{index}"
+                        "{}###{}".format(token, index)
                         for token, index in zip(self.tokens, self.indices2)
                     ]
                 )
