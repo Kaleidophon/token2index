@@ -22,7 +22,6 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 
 
 # TODO
-# - Update i2t after extend
 # - Determine compatibility with Python version
 # - Don't inherit from dict
 # - Index tests
@@ -110,16 +109,22 @@ class T2I(dict):
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
-        self.i2t = dict([(v, k) for k, v in self.items()])
-        self.i2t[
-            self[self.unk_token]
-        ] = self.unk_token  # Make sure there is always an index associated with <unk>
+        self._build_i2t()
 
         # torchtext vocab compatability
         self.itos = self.i2t
         self.stoi = self.t2i
 
         self.pickled = None  # See __setitem__
+
+    def _build_i2t(self) -> None:
+        """
+        (Re-)Build the index-to-token mapping.
+        """
+        self.i2t = dict([(v, k) for k, v in self.items()])
+        self.i2t[
+            self[self.unk_token]
+        ] = self.unk_token  # Make sure there is always an index associated with <unk>
 
     @property
     def t2i(self) -> Index:
@@ -139,6 +144,7 @@ class T2I(dict):
         delimiter: str = " ",
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
+        *special_tokens: Tuple[str],
     ) -> T2I:
         """
         Build token index from scratch on a corpus.
@@ -153,6 +159,8 @@ class T2I(dict):
             Token that should be used for unknown words. Default is '<unk>'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
+        special_tokens: Tuple[str]
+            An arbitrary number of additional special tokens, given as unnamed arguments.
 
         Returns
         -------
@@ -161,7 +169,7 @@ class T2I(dict):
         """
         t2i = T2I._create_index(corpus, delimiter)
 
-        return T2I(t2i, unk_token, eos_token)
+        return T2I(t2i, unk_token, eos_token, *special_tokens)
 
     @staticmethod
     def from_file(
@@ -170,6 +178,7 @@ class T2I(dict):
         delimiter: str = "\t",
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
+        *special_tokens: Tuple[str],
     ) -> T2I:
         """
         Generate a T2I object from a file. This file can have two possible formats:
@@ -189,7 +198,8 @@ class T2I(dict):
             Token that should be used for unknown words. Default is '<unk>'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
-
+        special_tokens: Tuple[str]
+            An arbitrary number of additional special tokens, given as unnamed arguments.
 
         Returns
         -------
@@ -214,7 +224,7 @@ class T2I(dict):
             else:
                 index = dict(zip(entries, range(len(entries))))
 
-        return T2I(index, unk_token, eos_token)
+        return T2I(index, unk_token, eos_token, *special_tokens)
 
     def extend(self, corpus: Corpus, delimiter: str = " ") -> T2I:
         """
