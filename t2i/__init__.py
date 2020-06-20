@@ -11,19 +11,26 @@ from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple
 # LIB
 from t2i.decorators import indexing_consistency, unindexing_consistency
 
+# Constants
+# Define the standard unk and eos token here
+STD_UNK = "<unk>"
+STD_EOS = "<eos>"
+
 # Custom types
 Corpus = Union[str, Iterable[str]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
-__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
+__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
+__version__ = "0.7.1"
 
 
 # TODO
+# - Counter / min_freq functionalities
 # - Don't inherit from dict
-# - Index tests
 # - type checks / exceptions
+# - Missing unittests
 # - Build documentation
 # - Write README
 # - GitHub repo description
@@ -76,9 +83,9 @@ class T2I(dict):
     def __init__(
         self,
         index: Union[Dict[str, int], Index],
-        unk_token: str = "<unk>",
-        eos_token: str = "<eos>",
-        *special_tokens: Tuple[str]
+        unk_token: str = STD_UNK,
+        eos_token: str = STD_EOS,
+        special_tokens: Tuple[str, ...] = tuple(),
     ) -> None:
         """
         Initialize the T2I class.
@@ -88,11 +95,11 @@ class T2I(dict):
         index:Index
             Dictionary mapping from tokens to indices.
         unk_token: str
-            Token for unknown words not contained in t2i. Default is '<unk>'.
+            Token for unknown words not contained in t2i. Default is 'STD_UNK'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
         special_tokens: Tuple[str]
-            An arbitrary number of additional special tokens, given as unnamed arguments.
+            An arbitrary number of additional special tokens.
         """
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
@@ -100,12 +107,14 @@ class T2I(dict):
             index[special_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
 
         super().__init__(index)
+
+        self.special_tokens = special_tokens
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
         self._build_i2t()
 
-        # torchtext vocab compatability
+        # torchtext vocab compatibility
         self.itos = self.i2t
         self.stoi = self.t2i
 
@@ -116,7 +125,7 @@ class T2I(dict):
         (Re-)Build the index-to-token mapping.
         """
         self.i2t = dict([(v, k) for k, v in self.items()])
-        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
+        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with STD_UNK
 
     @property
     def t2i(self) -> Index:
@@ -134,9 +143,9 @@ class T2I(dict):
     def build(
         corpus: Corpus,
         delimiter: str = " ",
-        unk_token: str = "<unk>",
-        eos_token: str = "<eos>",
-        *special_tokens: Tuple[str]
+        unk_token: str = STD_UNK,
+        eos_token: str = STD_EOS,
+        special_tokens: Tuple[str, ...] = tuple(),
     ):
         """
         Build token index from scratch on a corpus.
@@ -148,7 +157,7 @@ class T2I(dict):
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
         unk_token: str
-            Token that should be used for unknown words. Default is '<unk>'.
+            Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
         special_tokens: Tuple[str]
@@ -161,16 +170,16 @@ class T2I(dict):
         """
         t2i = T2I._create_index(corpus, delimiter)
 
-        return T2I(t2i, unk_token, eos_token, *special_tokens)
+        return T2I(t2i, unk_token, eos_token, special_tokens)
 
     @staticmethod
     def from_file(
         vocab_path: str,
         encoding: str = "utf-8",
         delimiter: str = "\t",
-        unk_token: str = "<unk>",
-        eos_token: str = "<eos>",
-        *special_tokens: Tuple[str]
+        unk_token: str = STD_UNK,
+        eos_token: str = STD_EOS,
+        special_tokens: Tuple[str, ...] = tuple(),
     ):
         """
         Generate a T2I object from a file. This file can have two possible formats:
@@ -187,11 +196,11 @@ class T2I(dict):
         delimiter: str
             Delimiter in case the format is token <delimiter> index. Default is '\t'.
         unk_token: str
-            Token that should be used for unknown words. Default is '<unk>'.
+            Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
         special_tokens: Tuple[str]
-            An arbitrary number of additional special tokens, given as unnamed arguments.
+            An arbitrary number of additional special tokens.
 
         Returns
         -------
@@ -216,7 +225,7 @@ class T2I(dict):
             else:
                 index = dict(zip(entries, range(len(entries))))
 
-        return T2I(index, unk_token, eos_token, *special_tokens)
+        return T2I(index, unk_token, eos_token, special_tokens)
 
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
@@ -236,7 +245,7 @@ class T2I(dict):
         """
         raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self))
 
-        t2i = T2I(raw_t2i, self.unk_token, self.eos_token)
+        t2i = T2I(raw_t2i, self.unk_token, self.eos_token, self.special_tokens)
 
         return t2i
 
@@ -381,9 +390,6 @@ class T2I(dict):
             t2i = pickle.load(f)
 
         return t2i
-
-    def __setstate__(self, state):
-        self.pickled = False
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """

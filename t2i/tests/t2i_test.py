@@ -9,13 +9,13 @@ import string
 import unittest
 
 # PROJECT
-from t2i import T2I, Index, Corpus
+from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
 #   - Test behavior for unexpected input types
 #   - Test usage of arbitrary special tokens
 #   - Test assignment of <unk> and <eos> when building vocab from file
-#   - Test updating of i2t after extending
+#   - Test counter / min_freq functionalities
 #   - Test __repr__
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index
@@ -37,15 +37,18 @@ class IndexingTest(unittest.TestCase):
         self.indexed_test_corpus2 = [0, 1, 2, 3, 3, 2, 4]
 
         self.test_corpus3 = "This is a test sentence"
-        self.test_corpus3b = "This is a test sentence <eos>"
+        self.test_corpus3b = "This is a test sentence {}".format(STD_EOS)
         self.indexed_test_corpus3 = [0, 1, 2, 3, 4, 6]
 
-        self.test_corpus4 = "This is a <unk> sentence <eos>"
-        self.test_corpus4b = "This is a goggledigook sentence <eos>"
+        self.test_corpus4 = "This is a {} sentence {}".format(STD_UNK, STD_EOS)
+        self.test_corpus4b = "This is a goggledigook sentence {}".format(STD_EOS)
         self.indexed_test_corpus45 = [0, 1, 2, 5, 4, 6]
 
         self.test_corpus5 = "This is a #UNK# sentence #EOS#"
         self.test_corpus5b = "This is a goggledigook sentence #EOS#"
+        self.test_corpus5c = "This is a #MASK# sentence #FLASK#"
+        self.indexed_test_corpus5c = [0, 1, 2, 7, 4, 8]
+        self.indexed_test_corpus5c2 = [0, 1, 2, 13, 4, 14]
 
     def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "):
         """
@@ -80,7 +83,8 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
 
-        # TODO: Test that i2t was updated
+        # Test whether i2t was updated
+        self.assertTrue(all([t2i[token] in t2i.i2t for token in additional_corpus.split()]))
 
     def test_delimiter_indexing(self):
         """
@@ -114,11 +118,46 @@ class IndexingTest(unittest.TestCase):
         """
         Test indexing with custom eos / unk token.
         """
-        t2i = T2I.build(self.test_corpus3, unk_token="#UNK#", eos_token="#EOS#")
+        t2i = T2I.build(self.test_corpus3, unk_token="#UNK#", eos_token="#EOS#", special_tokens=("#MASK#", "#FLASK#"))
 
         self.assertEqual(t2i.index(self.test_corpus5), self.indexed_test_corpus45)
         self.assertEqual(t2i.index(self.test_corpus5b), self.indexed_test_corpus45)
         self._assert_indexing_consistency(self.test_corpus5, t2i)
+        self.assertIn("#MASK#", t2i)
+        self.assertIn("#FLASK#", t2i)
+        string_repr = str(t2i)
+        self.assertIn("#MASK", string_repr)
+        self.assertIn("#FLASK", string_repr)
+        self.assertEqual(t2i.index(self.test_corpus5c), self.indexed_test_corpus5c)
+
+        # Make sure special tokens are still there after extend()
+        extended_t2i = t2i.extend(self.test_corpus4)
+        self.assertIn("#MASK#", extended_t2i)
+        self.assertIn("#FLASK#", extended_t2i)
+        extended_string_repr = str(extended_t2i)
+        self.assertIn("#MASK", extended_string_repr)
+        self.assertIn("#FLASK", extended_string_repr)
+        self.assertEqual(extended_t2i.index(self.test_corpus5c), self.indexed_test_corpus5c2)
+
+    def test_torchtext_compatibility(self):
+        """
+        Test whether the vocab object is compatible with the torchtext Vocab class.
+        """
+        t2i = T2I.build(self.test_corpus1)
+
+        self.assertEqual(t2i.t2i, t2i.stoi)
+        self.assertEqual(t2i.i2t, t2i.itos)
+
+    def test_representation(self):
+        """
+        Test whether the string representation works correctly.
+        """
+        t2i = T2I.build(self.test_corpus1, unk_token=">UNK<", eos_token=">EOS<")
+        str_representation = str(t2i)
+
+        self.assertIn(str(len(t2i)), str_representation)
+        self.assertIn(">UNK<", str_representation)
+        self.assertIn(">EOS<", str_representation)
 
     def test_immutability(self):
         """
@@ -372,6 +411,14 @@ class ModuleImportTest(unittest.TestCase):
 
         with self.assertRaises(import_error):
             from t2i.decorators import unindexing_consistency
+
+    def test_version(self):
+        """
+        Test whether the version of the module is available.
+        """
+        import t2i
+
+        self.assertEqual(type(t2i.__version__), str)
 
 
 def random_str(length: int) -> str:
