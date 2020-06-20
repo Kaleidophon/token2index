@@ -23,7 +23,6 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 
 # TODO
 # - Update i2t after extend
-# - Make compatible with torchtext vocab
 # - Determine compatibility with Python version
 # - Don't inherit from dict
 # - Index tests
