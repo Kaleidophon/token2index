@@ -205,25 +205,41 @@ class T2I(dict):
         Returns
         -------
         t2i: T2I
-            T2I object built from vocal file.
+            T2I object built from vocab file.
         """
-        # TODO: Check file format?
+
+        def _get_file_format(line: str) -> int:
+            """ Infer the vocab file format based on a a line. """
+            return len(line.split(delimiter))
 
         with codecs.open(vocab_path, "r", encoding) as vocab_file:
             entries = [line.strip() for line in vocab_file.readlines()]
 
             # Infer file format
+            file_format = _get_file_format(entries[0])
+
             # Format token <delimiter> index
-            if len(entries[0].split(delimiter)) == 2:
-                index = {}
+            index = {}
+
+            if file_format == 2:
 
                 for entry in entries:
+                    if _get_file_format(entry) != file_format:
+                        raise ValueError("Line in vocab file had unexpected format.")
+
                     token, idx = entry.split(delimiter)
                     index[token] = int(idx)
 
             # Format: One token per line
+            elif file_format == 1:
+                for idx, token in enumerate(entries):
+                    if _get_file_format(token) != file_format:
+                        raise ValueError("Line in vocab file had unexpected format.")
+
+                    index[token] = idx
+
             else:
-                index = dict(zip(entries, range(len(entries))))
+                raise ValueError("Vocab file has an unrecognized format.")
 
         return T2I(index, unk_token, eos_token, special_tokens)
 

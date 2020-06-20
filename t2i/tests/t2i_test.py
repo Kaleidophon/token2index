@@ -13,10 +13,9 @@ from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
 #   - Test behavior for unexpected input types
-#   - Test usage of arbitrary special tokens
 #   - Test assignment of <unk> and <eos> when building vocab from file
+#   - Test reading in incorrect vocab files
 #   - Test counter / min_freq functionalities
-#   - Test __repr__
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index
 #       - Using an index missing the unk and / or eos token
