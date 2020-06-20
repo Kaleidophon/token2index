@@ -79,7 +79,7 @@ class T2I(dict):
         index: Union[Dict[str, int], Index],
         unk_token: str = "<unk>",
         eos_token: str = "<eos>",
-        *special_tokens: Tuple[str],
+        *special_tokens: Tuple[str]
     ) -> None:
         """
         Initialize the T2I class.
@@ -95,14 +95,10 @@ class T2I(dict):
         special_tokens: Tuple[str]
             An arbitrary number of additional special tokens, given as unnamed arguments.
         """
-        assert len(set(index.values())) == len(
-            index.values()
-        ), "Index must only contain unique keys."
+        assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
         for special_token in [unk_token, eos_token] + list(special_tokens):
-            index[special_token] = (
-                max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
-            )
+            index[special_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
 
         super().__init__(index)
         self.unk_idx = index[unk_token]
@@ -121,9 +117,7 @@ class T2I(dict):
         (Re-)Build the index-to-token mapping.
         """
         self.i2t = dict([(v, k) for k, v in self.items()])
-        self.i2t[
-            self[self.unk_token]
-        ] = self.unk_token  # Make sure there is always an index associated with <unk>
+        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
 
     @property
     def t2i(self) -> Index:
@@ -248,9 +242,7 @@ class T2I(dict):
         return t2i
 
     @staticmethod
-    def _create_index(
-        corpus: Corpus, delimiter: str = " ", index: Optional[Index] = None
-    ) -> Index:
+    def _create_index(corpus: Corpus, delimiter: str = " ", index: Optional[Index] = None) -> Index:
         """
         Create a simple dictionary, mapping every type in a Corpus to a unique index.
 
@@ -302,9 +294,7 @@ class T2I(dict):
         return indexed_corpus
 
     @unindexing_consistency
-    def unindex(
-        self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " "
-    ) -> Corpus:
+    def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " ") -> Corpus:
         """
         Convert indices back to their original tokens. A joiner can be specified to determine how tokens are pieced
         back together. If the joiner is None, the tokens are not joined and are simply returned as a list.
@@ -353,9 +343,7 @@ class T2I(dict):
         indexed_corpus = []
 
         for sentence in corpus:
-            indexed_corpus.append(
-                list(map(self.__getitem__, sentence.strip().split(delimiter)))
-            )
+            indexed_corpus.append(list(map(self.__getitem__, sentence.strip().split(delimiter))))
 
         return indexed_corpus
 
@@ -376,9 +364,7 @@ class T2I(dict):
         # last, so checking for its existence is an indicator for the progress of the unpickling. Naturally this is not
         # good code, as I don't know WHY it is loaded last and this behavior might break with new, future attributes.
         if hasattr(self, "pickled"):
-            raise NotImplementedError(
-                "Setting of new indices not possible after initialization. Use extend() instead."
-            )
+            raise NotImplementedError("Setting of new indices not possible after initialization. Use extend() instead.")
 
         else:
             super().__setitem__(key, value)
