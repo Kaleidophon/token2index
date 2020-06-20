@@ -27,6 +27,7 @@ def indexing_consistency(func: Callable) -> Callable:
     func: Callable
         Decorated indexing function.
     """
+
     @wraps(func)
     def with_indexing_consistency(self, corpus, *args, **kwargs):
         if type(corpus) == str:
@@ -61,6 +62,7 @@ def unindexing_consistency(func: Callable) -> Callable:
     func: Callable
         Decorated indexing function.
     """
+
     @wraps(func)
     def with_unindexing_consistency(self, indexed_corpus, *args, **kwargs):
         if all([type(el) == int for el in indexed_corpus]):

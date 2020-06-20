@@ -25,6 +25,7 @@ __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus"]
 # - Update i2t after extend
 # - Make compatible with torchtext vocab
 # - Determine compatibility with Python version
+# - Setup black pre-commit hook
 # - Don't inherit from dict
 # - Index tests
 # - type checks / exceptions
@@ -43,6 +44,7 @@ class Index(dict):
     doesn't inherit from defaultdict, because functions returning the value for missing keys can only return a constant
     value. In this case, after every lookup of a new token, this value for an unknown is incremented by one.
     """
+
     def __getitem__(self, key: Hashable) -> Any:
         """
         Return value corresponding to key. If key doesn't exist yet, return CURRENT size of defaultdict.
@@ -58,16 +60,16 @@ class Index(dict):
             Value associated key or current length of dict in case of a new key.
         """
         if key not in self:
-            self[key] = self.highest_idx
+            self[key] = self.highest_idx + 1
 
         return super().__getitem__(key)
 
     @property
     def highest_idx(self) -> int:
         """
-        Return the highest index in the index.
+        Return the currently highest index in the index. Return -1 if the index is empty.
         """
-        return max(max(self.values()) + 1, len(self)) if len(self) > 0 else 0
+        return max(max(self.values()), len(self) - 1) if len(self) > 0 else -1
 
 
 class T2I(dict):
@@ -76,7 +78,14 @@ class T2I(dict):
     can be mapped to the tokens' assigned indices. There are special tokens for the end of a sentence (eos_token) and
     for tokens that were not added to the index during the build phase (unk_token).
     """
-    def __init__(self, index: Union[Dict[str, int], Index], unk_token: str = "<unk>", eos_token: str = "<eos>") -> None:
+
+    # TODO: Allow arbitrary special tokens?
+    def __init__(
+        self,
+        index: Union[Dict[str, int], Index],
+        unk_token: str = "<unk>",
+        eos_token: str = "<eos>",
+    ) -> None:
         """
         Initialize the T2I class.
 
@@ -89,20 +98,28 @@ class T2I(dict):
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
         """
-        assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
+        assert len(set(index.values())) == len(
+            index.values()
+        ), "Index must only contain unique keys."
 
         if unk_token not in index:
-            index[unk_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
+            index[unk_token] = (
+                max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
+            )
 
         if eos_token not in index:
-            index[eos_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
+            index[eos_token] = (
+                max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
+            )
 
         super().__init__(index)
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
         self.i2t = dict([(v, k) for k, v in self.items()])
-        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with <unk>
+        self.i2t[
+            self[self.unk_token]
+        ] = self.unk_token  # Make sure there is always an index associated with <unk>
         self.pickled = None  # See __setitem__
 
     @property
@@ -118,7 +135,12 @@ class T2I(dict):
         return Index(self)
 
     @staticmethod
-    def build(corpus: Corpus, delimiter: str = " ", unk_token: str = "<unk>", eos_token: str = "<eos>") -> T2I:
+    def build(
+        corpus: Corpus,
+        delimiter: str = " ",
+        unk_token: str = "<unk>",
+        eos_token: str = "<eos>",
+    ) -> T2I:
         """
         Build token index from scratch on a corpus.
 
@@ -143,8 +165,13 @@ class T2I(dict):
         return T2I(t2i, unk_token, eos_token)
 
     @staticmethod
-    def from_file(vocab_path: str, encoding: str = "utf-8", delimiter: str = "\t", unk_token: str = "<unk>",
-                  eos_token: str = "<eos>") -> T2I:
+    def from_file(
+        vocab_path: str,
+        encoding: str = "utf-8",
+        delimiter: str = "\t",
+        unk_token: str = "<unk>",
+        eos_token: str = "<eos>",
+    ) -> T2I:
         """
         Generate a T2I object from a file. This file can have two possible formats:
 
@@ -159,6 +186,11 @@ class T2I(dict):
             Encoding of vocabulary file (default is 'utf-8').
         delimiter: str
             Delimiter in case the format is token <delimiter> index. Default is '\t'.
+        unk_token: str
+            Token that should be used for unknown words. Default is '<unk>'.
+        eos_token: str
+            Token that marks the end of a sequence. Default is '<eos>'.
+
 
         Returns
         -------
@@ -208,7 +240,9 @@ class T2I(dict):
         return t2i
 
     @staticmethod
-    def _create_index(corpus: Corpus, delimiter: str = " ", index: Optional[Index] = None) -> Index:
+    def _create_index(
+        corpus: Corpus, delimiter: str = " ", index: Optional[Index] = None
+    ) -> Index:
         """
         Create a simple dictionary, mapping every type in a Corpus to a unique index.
 
@@ -260,7 +294,9 @@ class T2I(dict):
         return indexed_corpus
 
     @unindexing_consistency
-    def unindex(self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " ") -> Corpus:
+    def unindex(
+        self, indexed_corpus: IndexedCorpus, joiner: Optional[str] = " "
+    ) -> Corpus:
         """
         Convert indices back to their original tokens. A joiner can be specified to determine how tokens are pieced
         back together. If the joiner is None, the tokens are not joined and are simply returned as a list.
@@ -309,7 +345,9 @@ class T2I(dict):
         indexed_corpus = []
 
         for sentence in corpus:
-            indexed_corpus.append(list(map(self.__getitem__, sentence.strip().split(delimiter))))
+            indexed_corpus.append(
+                list(map(self.__getitem__, sentence.strip().split(delimiter)))
+            )
 
         return indexed_corpus
 
@@ -330,7 +368,9 @@ class T2I(dict):
         # last, so checking for its existence is an indicator for the progress of the unpickling. Naturally this is not
         # good code, as I don't know WHY it is loaded last and this behavior might break with new, future attributes.
         if hasattr(self, "pickled"):
-            raise NotImplementedError("Setting of new indices not possible after initialization. Use extend() instead.")
+            raise NotImplementedError(
+                "Setting of new indices not possible after initialization. Use extend() instead."
+            )
 
         else:
             super().__setitem__(key, value)
@@ -354,5 +394,7 @@ class T2I(dict):
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
-        return f"T2I(Size: {len(self.t2i)}, unk_token: {self.unk_token}, eos_token: {self.eos_token}, "\
-               f"{dict.__repr__(self)})"
+        return (
+            f"T2I(Size: {len(self.t2i)}, unk_token: {self.unk_token}, eos_token: {self.eos_token}, "
+            f"{dict.__repr__(self)})"
+        )

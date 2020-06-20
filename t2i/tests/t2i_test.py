@@ -9,13 +9,17 @@ import string
 import unittest
 
 # PROJECT
-from t2i import T2I, Corpus
+from t2i import T2I, Index, Corpus
+
+
+# TODO: Test behavior for unexpected input types
 
 
 class IndexingTest(unittest.TestCase):
     """
     Test whether the building of the index and the indexing and un-indexing of an input work.
     """
+
     def setUp(self):
         self.test_corpus1 = "A B C D B C A E"
         self.indexed_test_corpus1 = [0, 1, 2, 3, 1, 2, 0, 4]
@@ -34,18 +38,22 @@ class IndexingTest(unittest.TestCase):
         self.test_corpus5 = "This is a #UNK# sentence #EOS#"
         self.test_corpus5b = "This is a goggledigook sentence #EOS#"
 
-    def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "):
+    def _assert_indexing_consistency(
+        self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "
+    ):
         """
         Test whether first indexing and then un-indexing yields the original sequence.
         """
-        self.assertEqual(t2i.unindex(t2i.index(corpus, delimiter=delimiter), joiner=joiner), corpus)
+        self.assertEqual(
+            t2i.unindex(t2i.index(corpus, delimiter=delimiter), joiner=joiner), corpus
+        )
 
     def test_default_indexing(self):
         """
         Test normal indexing case.
         """
         t2i = T2I.build(self.test_corpus1)
-        
+
         self.assertEqual(t2i.index(self.test_corpus1), self.indexed_test_corpus1)
         self._assert_indexing_consistency(self.test_corpus1, t2i)
 
@@ -73,10 +81,14 @@ class IndexingTest(unittest.TestCase):
         """
         Test indexing with different delimiter.
         """
-        t2i = T2I.build(self.test_corpus2,  delimiter="-")
+        t2i = T2I.build(self.test_corpus2, delimiter="-")
 
-        self.assertEqual(t2i.index(self.test_corpus2, delimiter="-"), self.indexed_test_corpus2)
-        self._assert_indexing_consistency(self.test_corpus2, t2i, joiner="-", delimiter="-")
+        self.assertEqual(
+            t2i.index(self.test_corpus2, delimiter="-"), self.indexed_test_corpus2
+        )
+        self._assert_indexing_consistency(
+            self.test_corpus2, t2i, joiner="-", delimiter="-"
+        )
 
     def test_eos_indexing(self):
         """
@@ -121,6 +133,7 @@ class TypeConsistencyTest(unittest.TestCase):
     Test whether T2I correctly infers the data structure of the input. This is important because some methods are
     expected to work with both single sentence or a list of sentences (or the indexed equivalents of that).
     """
+
     def setUp(self):
         test_corpus = "This is a long test sentence . It contains many words."
         self.t2i = T2I.build(test_corpus)
@@ -171,8 +184,11 @@ class TypeConsistencyTest(unittest.TestCase):
         unindexed_test_sentence = self.t2i.unindex(indexed_test_sentence)
         self.assertEqual(type(unindexed_test_sentence), str)
         self.assertEqual(test_sentence, unindexed_test_sentence)
-        self.assertEqual(test_sentence.replace(" ", "###"), self.t2i.unindex(indexed_test_sentence, joiner="###"))
-        
+        self.assertEqual(
+            test_sentence.replace(" ", "###"),
+            self.t2i.unindex(indexed_test_sentence, joiner="###"),
+        )
+
         # Check un-indexing consistency for single sentence without a joiner
         unjoined_test_sentence = self.t2i.unindex(indexed_test_sentence, joiner=None)
         self.assertEqual(test_sentence.split(" "), unjoined_test_sentence)
@@ -185,7 +201,9 @@ class TypeConsistencyTest(unittest.TestCase):
 
         self.assertEqual(type(indexed_test_corpus), list)
         self.assertTrue(all([type(sent) == list for sent in indexed_test_corpus]))
-        self.assertTrue(all([type(idx) == int for sent in indexed_test_corpus for idx in sent]))
+        self.assertTrue(
+            all([type(idx) == int for sent in indexed_test_corpus for idx in sent])
+        )
 
         # Check un-indexing consistency for a list of sentences
         unindexed_test_corpus = self.t2i.unindex(indexed_test_corpus)
@@ -194,20 +212,23 @@ class TypeConsistencyTest(unittest.TestCase):
         self.assertEqual(unindexed_test_corpus, test_corpus)
         self.assertEqual(
             [sent.replace(" ", "###") for sent in test_corpus],
-            self.t2i.unindex(indexed_test_corpus, joiner="###")
+            self.t2i.unindex(indexed_test_corpus, joiner="###"),
         )
 
         # Check un-indexing consistency for a list of sentence  without a joiner
         unjoined_test_corpus = self.t2i.unindex(indexed_test_corpus, joiner=None)
         self.assertEqual(type(unindexed_test_corpus), list)
         self.assertTrue(all([type(sent) == list for sent in unjoined_test_corpus]))
-        self.assertTrue(all([type(token) == str for sent in unjoined_test_corpus for token in sent]))
+        self.assertTrue(
+            all([type(token) == str for sent in unjoined_test_corpus for token in sent])
+        )
 
 
 class VocabFileTest(unittest.TestCase):
     """
     Test building a T2I object from a vocab file.
     """
+
     def setUp(self):
         num_tokens = 30
         self.tokens = [random_str(random.randint(3, 8)) for _ in range(num_tokens)]
@@ -223,7 +244,12 @@ class VocabFileTest(unittest.TestCase):
         random.shuffle(self.indices2)
         with open(self.vocab_path2, "w") as vocab_file2:
             vocab_file2.write(
-                "\n".join([f"{token}\t{index}" for token, index in zip(self.tokens, self.indices2)])
+                "\n".join(
+                    [
+                        f"{token}\t{index}"
+                        for token, index in zip(self.tokens, self.indices2)
+                    ]
+                )
             )
 
         # Second vocab file format, this time with higher indices
@@ -232,14 +258,24 @@ class VocabFileTest(unittest.TestCase):
         random.shuffle(self.indices3)
         with open(self.vocab_path3, "w") as vocab_file3:
             vocab_file3.write(
-                "\n".join([f"{token}\t{index}" for token, index in zip(self.tokens, self.indices3)])
+                "\n".join(
+                    [
+                        f"{token}\t{index}"
+                        for token, index in zip(self.tokens, self.indices3)
+                    ]
+                )
             )
 
         # Second vocab file format, but with different delimiter
         self.vocab_path4 = "vocab4.csv"
         with open(self.vocab_path4, "w") as vocab_file4:
             vocab_file4.write(
-                "\n".join([f"{token}###{index}" for token, index in zip(self.tokens, self.indices2)])
+                "\n".join(
+                    [
+                        f"{token}###{index}"
+                        for token, index in zip(self.tokens, self.indices2)
+                    ]
+                )
             )
 
     def tearDown(self):
@@ -255,19 +291,30 @@ class VocabFileTest(unittest.TestCase):
         # TODO: Test assignment of <unk> and <eos>
         # First vocab file format: One token per line
         t2i1 = T2I.from_file(self.vocab_path1)
-        self.assertTrue([t2i1[token] == idx for token, idx in zip(self.tokens, range(len(self.tokens)))])
+        self.assertTrue(
+            [
+                t2i1[token] == idx
+                for token, idx in zip(self.tokens, range(len(self.tokens)))
+            ]
+        )
 
         # Second vocab file format: Token and index, separated by tab
         t2i2 = T2I.from_file(self.vocab_path2)
-        self.assertTrue([t2i2[token] == idx for token, idx in zip(self.tokens, self.indices2)])
+        self.assertTrue(
+            [t2i2[token] == idx for token, idx in zip(self.tokens, self.indices2)]
+        )
 
         # Second vocab file format, this time with higher indices
         t2i3 = T2I.from_file(self.vocab_path3)
-        self.assertTrue([t2i3[token] == idx for token, idx in zip(self.tokens, self.indices3)])
+        self.assertTrue(
+            [t2i3[token] == idx for token, idx in zip(self.tokens, self.indices3)]
+        )
 
         # Second vocab file format, but with different delimiter
         t2i4 = T2I.from_file(self.vocab_path4, delimiter="###")
-        self.assertTrue([t2i4[token] == idx for token, idx in zip(self.tokens, self.indices2)])
+        self.assertTrue(
+            [t2i4[token] == idx for token, idx in zip(self.tokens, self.indices2)]
+        )
 
     def test_correct_indexing(self):
         """
@@ -279,8 +326,10 @@ class VocabFileTest(unittest.TestCase):
         test_sent = "These are definitely new non-random tokens ."
 
         t2i = t2i.extend(test_sent)
-        
-        self.assertTrue(all([t2i[token] > highest_index for token in test_sent.split(" ")]))
+
+        self.assertTrue(
+            all([t2i[token] > highest_index for token in test_sent.split(" ")])
+        )
 
         # TODO: Test updating of i2t
 
@@ -289,6 +338,7 @@ class SerializationTest(unittest.TestCase):
     """
     Test saving and loading of a T2I object.
     """
+
     def setUp(self):
         self.path = "test_t2i.pkl"
 
@@ -297,7 +347,14 @@ class SerializationTest(unittest.TestCase):
 
     def test_serialization(self):
         """ The above. """
-        t2i = T2I.build(" ".join([random_str(random.randint(3, 10)) for _ in range(random.randint(20, 40))]))
+        t2i = T2I.build(
+            " ".join(
+                [
+                    random_str(random.randint(3, 10))
+                    for _ in range(random.randint(20, 40))
+                ]
+            )
+        )
 
         t2i.save(self.path)
 
@@ -305,8 +362,35 @@ class SerializationTest(unittest.TestCase):
 
 
 class IndexTest(unittest.TestCase):
-    ...
-    # TODO: Test Index class
+    """
+    Test the Index class (and initializing a T2I with an index).
+    """
+
+    def test_index(self):
+        """
+        Test whether functionalities of the Index class work correctly.
+        """
+        # Empty index
+        index = Index()
+        self.assertEqual(index.highest_idx, -1)
+
+        # Look up some random words
+        num_tokens = random.randint(5, 15)
+        for token in [random_str(5) for _ in range(num_tokens)]:
+            index[token]
+
+        # Check if indexing was done correctly
+        self.assertEqual(set(range(num_tokens)), set(index.values()))
+
+        # Now add some more distant indices and check if highest_idx changes accordingly
+        high_indices = [random.randint(50, 100) for _ in range(30)]
+
+        for high_index in high_indices:
+            index[random_str(5)] = high_index
+
+        self.assertEqual(len(index), num_tokens + len(high_indices))
+        self.assertEqual(index.highest_idx, max(high_indices))
+
     # TODO: Test init of T2I class with index, in particular
     #       - Using an empty index
     #       - Using an index missing the unk and / or eos token
@@ -318,6 +402,7 @@ class ModuleImportTest(unittest.TestCase):
     """
     Test the behavior of certain module imports.
     """
+
     def test_import_restrictions(self):
         """
         Decorators from t2i.decorators shouldn't be exposed and available for importing for user of the package, so make
