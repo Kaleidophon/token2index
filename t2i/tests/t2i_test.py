@@ -12,10 +12,12 @@ import unittest
 from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
+#   - Test iter
 #   - Test behavior for unexpected input types
 #   - Test assignment of <unk> and <eos> when building vocab from file
 #   - Test reading in incorrect vocab files
 #   - Test counter / min_freq functionalities
+#   - Test max_size feature
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index
 #       - Using an index missing the unk and / or eos token
@@ -163,7 +165,7 @@ class IndexingTest(unittest.TestCase):
         Test whether the T2I stays immutable after object init.
         """
         t2i = T2I.build(self.test_corpus1)
-        with self.assertRaises(NotImplementedError):
+        with self.assertRaises(TypeError):
             t2i["banana"] = 66
 
 
@@ -328,7 +330,7 @@ class VocabFileTest(unittest.TestCase):
         case, indexing should be continued from the highest index.
         """
         t2i = T2I.from_file(self.vocab_path3)
-        highest_index = max(t2i.values())
+        highest_index = max(t2i.indices())
         test_sent = "These are definitely new non-random tokens ."
 
         t2i = t2i.extend(test_sent)

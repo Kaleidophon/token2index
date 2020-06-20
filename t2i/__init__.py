@@ -6,7 +6,7 @@ Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose
 import codecs
 import sys
 import pickle
-from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple
+from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple, Iterator
 
 # LIB
 from t2i.decorators import indexing_consistency, unindexing_consistency
@@ -31,7 +31,6 @@ __version__ = "0.7.1"
 #   - max_size / counter
 #   - special_tokens -> specials
 #   - max_size
-# - Don't inherit from dict
 # - type checks / exceptions
 # - Missing unittests
 # - Build documentation
@@ -76,7 +75,7 @@ class Index(dict):
         return max(max(self.values()), len(self) - 1) if len(self) > 0 else -1
 
 
-class T2I(dict):
+class T2I:
     """
     Provides vocab functionality mapping tokens to indices. After building an index, sentences or a corpus of sentences
     can be mapped to the tokens' assigned indices. There are special tokens for the end of a sentence (eos_token) and
@@ -85,7 +84,7 @@ class T2I(dict):
 
     def __init__(
         self,
-        index: Union[Dict[str, int], Index],
+        index: Optional[Union[Dict[str, int], Index]] = None,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         special_tokens: Tuple[str, ...] = tuple(),
@@ -95,22 +94,27 @@ class T2I(dict):
 
         Parameters
         ----------
-        index:Index
+        index: Optional[Union[Dict[str, int], Index]]
             Dictionary mapping from tokens to indices.
         unk_token: str
             Token for unknown words not contained in t2i. Default is 'STD_UNK'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
-        special_tokens: Tuple[str]
+        special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens.
         """
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
+        if index is None:
+            index = {}
+
+        if type(index) == dict:
+            index = Index(index)
+
         for special_token in [unk_token, eos_token] + list(special_tokens):
-            index[special_token] = max(max(index.values()) + 1, len(index)) if len(index) > 0 else 0
+            index[special_token] = index.highest_idx + 1
 
-        super().__init__(index)
-
+        self._index = index
         self.special_tokens = special_tokens
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
@@ -127,7 +131,7 @@ class T2I(dict):
         """
         (Re-)Build the index-to-token mapping.
         """
-        self.i2t = dict([(v, k) for k, v in self.items()])
+        self.i2t = dict([(v, k) for k, v in self._index.items()])
         self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with STD_UNK
 
     @property
@@ -140,7 +144,7 @@ class T2I(dict):
         t2i: Index
             Dictionary mapping from tokens to indices.
         """
-        return Index(self)
+        return self._index
 
     @staticmethod
     def build(
@@ -163,7 +167,7 @@ class T2I(dict):
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
-        special_tokens: Tuple[str]
+        special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens, given as unnamed arguments.
 
         Returns
@@ -202,7 +206,7 @@ class T2I(dict):
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
-        special_tokens: Tuple[str]
+        special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens.
 
         Returns
@@ -262,7 +266,7 @@ class T2I(dict):
         t2i: T2I
             New T2I object.
         """
-        raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self))
+        raw_t2i = T2I._create_index(corpus, delimiter, index=self._index)
 
         t2i = T2I(raw_t2i, self.unk_token, self.eos_token, self.special_tokens)
 
@@ -374,27 +378,37 @@ class T2I(dict):
 
         return indexed_corpus
 
-    def __missing__(self, key: str) -> int:
-        """ Return the unk token index in case of a missing entry. """
-        return self.unk_idx
+    def __getitem__(self, token: str) -> int:
+        """ Return the index corresponding to a token. """
+        return self._index.get(token, self.unk_idx)
 
-    def __setitem__(self, key: str, value: int) -> None:
-        """ Don't allow to set new indices after class was initialized. """
-        # TODO: Find a better way to do this
-        # TODO: Fix this by not inheriting from dict and instead using this as a wrapper class and not implementing
-        # TODO: __setitem__()
-        # This line is one of the most adventurous line I have ever written and I hate it:
-        # I want to have __setitem__ raise this exception here so that the index cannot be manipulated directly, e.g.
-        # by doing 't2i["hello"] = 46'. However, during loading a serialized version of this object, pickle is using
-        # ___setitem__ to rebuild the T2I object. Thus, this function raises an error during unpickling and the
-        # object cannot be un-serialized. For some reason, the attribute with the name "pickled" is current being loaded
-        # last, so checking for its existence is an indicator for the progress of the unpickling. Naturally this is not
-        # good code, as I don't know WHY it is loaded last and this behavior might break with new, future attributes.
-        if hasattr(self, "pickled"):
-            raise NotImplementedError("Setting of new indices not possible after initialization. Use extend() instead.")
+    def __contains__(self, token: str) -> bool:
+        """ Return whether token exists in index. """
+        return token in self._index
 
-        else:
-            super().__setitem__(key, value)
+    def __len__(self) -> int:
+        """ Return length of index. """
+        return len(self._index)
+
+    def __eq__(self, other) -> bool:
+        """ Compare this T2I to another object. """
+        if not isinstance(other, T2I):
+            return False
+
+        return self._index == other._index
+
+    def __iter__(self) -> Iterator[Tuple[str, int]]:
+        """ Iterate over this T2I index by iterating over tokens and their corresponding indices. """
+        for token, idx in self._index:
+            yield token, idx
+
+    def tokens(self) -> Tuple[str, ...]:
+        """ Return all token in this T2I object. """
+        return tuple(self._index.keys())
+
+    def indices(self) -> Tuple[int, ...]:
+        """ Return all indices in this T2I object. """
+        return tuple(self._index.values())
 
     def save(self, path: str) -> None:
         """ Save T2I object as pickle. """
@@ -413,5 +427,5 @@ class T2I(dict):
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
         return "T2I(Size: {}, unk_token: {}, eos_token: {}, {})".format(
-            len(self.t2i), self.unk_token, self.eos_token, dict.__repr__(self)
+            len(self.t2i), self.unk_token, self.eos_token, self._index.__repr__()
         )
