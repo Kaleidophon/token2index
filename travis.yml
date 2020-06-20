@@ -1,0 +1,17 @@
+dist: xenial
+sudo: false
+language: python
+cache: pip
+python:
+  - "3.7"
+
+# command to install dependencies
+install:
+  - pip install -U pip
+  - pip -q install -r requirements.txt
+  - pip install -e .
+
+script:
+  # Unit test
+  - python -m unittest discover -v
+  - coverage run -m unittest discover
