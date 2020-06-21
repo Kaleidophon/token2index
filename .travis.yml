@@ -28,5 +28,5 @@ script:
   - coverage report --skip-covered
   - coveralls
   - cd docs
-  - make clean
-  - make html
+  - make clean && make html
+  - ln -s html/index.html index.html
