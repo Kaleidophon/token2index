@@ -277,6 +277,11 @@ class T2I:
                         raise ValueError("Line in vocab file had unexpected format.")
 
                     token, idx = entry.split(delimiter)
+
+                    # Ignore special tokens, they will be added later
+                    if token in [unk_token, eos_token] + list(special_tokens):
+                        continue
+
                     index[token] = int(idx)
 
             # Format: One token per line
@@ -284,6 +289,10 @@ class T2I:
                 for idx, token in enumerate(entries):
                     if _get_file_format(token) != file_format:
                         raise ValueError("Line in vocab file had unexpected format.")
+
+                    # Ignore special tokens, they will be added later
+                    if token in [unk_token, eos_token] + list(special_tokens):
+                        continue
 
                     index[token] = idx
 

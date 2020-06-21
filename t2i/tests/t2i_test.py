@@ -13,12 +13,10 @@ import unittest
 from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
-#   - Test assignment of <unk> and <eos> when building vocab from file
 #   - Test counter / min_freq feature
 #   - Test max_size feature
 #   - Test init of T2I class with index, in particular
 #       - Using an empty index
-#       - Using an index missing the unk and / or eos token
 #       - Using the index with existing unk and / or eos token
 #       - Using the index with a custom unk and / or eos token
 
@@ -336,12 +334,17 @@ class VocabFileTest(unittest.TestCase):
                 "\n".join(["{}###{}".format(token, index) for token, index in zip(self.tokens, self.indices2)])
             )
 
-        # ### Improper vocab files ###
-        # First case: Very random and definitely wrong format
-        delimiters = ["\n", "\r", "\t"]
+        # Test what happens if unk, eos or special tokens are already in vocab file
         self.vocab_path5 = "vocab5.csv"
         with open(self.vocab_path5, "w") as vocab_file5:
-            vocab_file5.write(
+            vocab_file5.write("\n".join(self.tokens + ["<unk>", "<eos>", "<mask>", "<flask>"]))
+
+        # ### Improper vocab files ###
+        # First case: Inconsistent delimiters
+        delimiters = ["\n", "\r", "\t"]
+        self.vocab_path6 = "vocab6.csv"
+        with open(self.vocab_path6, "w") as vocab_file6:
+            vocab_file6.write(
                 "\n".join(
                     [
                         "{}{}{}{}".format(token, random.choice(delimiters), index, random.choice(delimiters))
@@ -351,9 +354,9 @@ class VocabFileTest(unittest.TestCase):
             )
 
         # Second case: Mixed file format
-        self.vocab_path6 = "vocab6.csv"
-        with open(self.vocab_path6, "w") as vocab_file6:
-            vocab_file6.write(
+        self.vocab_path7 = "vocab7.csv"
+        with open(self.vocab_path7, "w") as vocab_file7:
+            vocab_file7.write(
                 "\n".join(
                     [
                         token if random.random() > 0.5 else "{}\t{}".format(token, index)
@@ -362,6 +365,20 @@ class VocabFileTest(unittest.TestCase):
                 )
             )
 
+        # Third case: Too many columns
+        self.vocab_path8 = "vocab8.csv"
+        with open(self.vocab_path8, "w") as vocab_file8:
+            vocab_file8.write(
+                "\n".join(
+                    ["{}\t{}\t{}".format(token, token, index) for token, index in zip(self.tokens, self.indices2)]
+                )
+            )
+
+        # Forth case: Second format but no ints as second column
+        self.vocab_path9 = "vocab9.csv"
+        with open(self.vocab_path9, "w") as vocab_file9:
+            vocab_file9.write("\n".join(["{}\t{}".format(token, token) for token in self.tokens]))
+
     def tearDown(self):
         os.remove(self.vocab_path1)
         os.remove(self.vocab_path2)
@@ -369,6 +386,9 @@ class VocabFileTest(unittest.TestCase):
         os.remove(self.vocab_path4)
         os.remove(self.vocab_path5)
         os.remove(self.vocab_path6)
+        os.remove(self.vocab_path7)
+        os.remove(self.vocab_path8)
+        os.remove(self.vocab_path9)
 
     def test_building_from_file(self):
         """
@@ -391,14 +411,27 @@ class VocabFileTest(unittest.TestCase):
         t2i4 = T2I.from_file(self.vocab_path4, delimiter="###")
         self.assertTrue([t2i4[token] == idx for token, idx in zip(self.tokens, self.indices2)])
 
+        # unk, eos, special tokens already in vocab file
+        t2i5 = T2I.from_file(self.vocab_path5, special_tokens=("<mask>", "<flask>"))
+        self.assertEqual(t2i1["<eos>"], t2i5["<eos>"])
+        self.assertEqual(t2i1["<unk>"], t2i5["<unk>"])
+
         # ### Improper vocab files ###
         # Nonsensical format
         with self.assertRaises(ValueError):
-            T2I.from_file(self.vocab_path5)
+            T2I.from_file(self.vocab_path6)
 
         # Mixed format
         with self.assertRaises(ValueError):
-            T2I.from_file(self.vocab_path6)
+            T2I.from_file(self.vocab_path7)
+
+        # Too many columns
+        with self.assertRaises(ValueError):
+            T2I.from_file(self.vocab_path8)
+
+        # Second format but no ints in second column
+        with self.assertRaises(ValueError):
+            T2I.from_file(self.vocab_path9)
 
     def test_correct_indexing(self):
         """
