@@ -13,6 +13,7 @@ from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
 #   - Test iter
+#   - Test memory usage
 #   - Test behavior for unexpected input types
 #   - Test assignment of <unk> and <eos> when building vocab from file
 #   - Test reading in incorrect vocab files

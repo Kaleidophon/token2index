@@ -28,14 +28,15 @@ __version__ = "0.9.0"
 
 
 # TODO
-# - type checks / exceptions
 # - Missing unittests
 # - Build documentation
+# - Github / Zenodo citation
+# (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
 # - Write README
 # - GitHub repo description
 # - Release on PIP
 # - Release to i-machine-think / friends (Santhosh, David, ...)
-# - General release
+# - General release (LinkedIn, Reddit, Twitter ...)
 
 
 class Index(dict):
@@ -110,6 +111,8 @@ class T2I:
             An arbitrary number of additional special tokens.
         """
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
+        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
         if index is None:
             index = {}
@@ -148,7 +151,7 @@ class T2I:
         (Re-)Build the index-to-token mapping.
         """
         self.i2t = dict([(v, k) for k, v in self._index.items()])
-        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with STD_UNK
+        self.i2t[self[self.unk_token]] = self.unk_token  # Make sure there is always an index associated with eos token
 
     @property
     def t2i(self) -> Index:
@@ -200,6 +203,9 @@ class T2I:
         t2i: T2I
             New T2I object.
         """
+        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
+
         t2i = T2I._create_index(corpus, delimiter)
 
         return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
@@ -248,6 +254,8 @@ class T2I:
         t2i: T2I
             T2I object built from vocab file.
         """
+        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
         def _get_file_format(line: str) -> int:
             """ Infer the vocab file format based on a a line. """
@@ -378,6 +386,7 @@ class T2I:
             Un-indexed corpus.
         """
         corpus = []
+
         for sequence in indexed_corpus:
             tokens = list(map(self.i2t.__getitem__, sequence))
 
