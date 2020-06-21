@@ -15,13 +15,29 @@ from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 # TODO: Missing tests
 #   - Test counter / min_freq feature
 #   - Test max_size feature
-#   - Test init of T2I class with index, in particular
-#       - Using an empty index
-#       - Using the index with existing unk and / or eos token
-#       - Using the index with a custom unk and / or eos token
 
 
-class IndexingTest(unittest.TestCase):
+class InitTests(unittest.TestCase):
+    """
+    Test some behaviors when a T2I object is initialized.
+    """
+
+    def test_init(self):
+        """
+        The above.
+        """
+        # Init an empty T2I object
+        empty_t2i = T2I()
+        self.assertEqual(2, len(empty_t2i))
+        self.assertEqual(Index, type(empty_t2i._index))
+
+        # Init a T2I object with unk and eos token
+        t2i = T2I({"<eos>": 10, "<unk>": 14})
+        self.assertEqual(t2i["<unk>"], 0)
+        self.assertEqual(t2i["<eos>"], 1)
+
+
+class IndexingTests(unittest.TestCase):
     """
     Test whether the building of the index and the indexing and un-indexing of an input work.
     """
@@ -146,7 +162,7 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.i2t, t2i.itos)
 
 
-class MiscellaneousTest(unittest.TestCase):
+class MiscellaneousTests(unittest.TestCase):
     """
     Miscellaneous test for the T2I tests.
     """
@@ -203,7 +219,7 @@ class MiscellaneousTest(unittest.TestCase):
         self.assertEqual(expected_contents, contents)
 
 
-class TypeConsistencyTest(unittest.TestCase):
+class TypeConsistencyTests(unittest.TestCase):
     """
     Test whether T2I correctly infers the data structure of the input. This is important because some methods are
     expected to work with both single sentence or a list of sentences (or the indexed equivalents of that).
@@ -293,7 +309,7 @@ class TypeConsistencyTest(unittest.TestCase):
         self.assertTrue(all([type(token) == str for sent in unjoined_test_corpus for token in sent]))
 
 
-class VocabFileTest(unittest.TestCase):
+class VocabFileTests(unittest.TestCase):
     """
     Test building a T2I object from a vocab file.
     """
@@ -447,7 +463,7 @@ class VocabFileTest(unittest.TestCase):
         self.assertTrue(all([t2i[token] > highest_index for token in test_sent.split(" ")]))
 
 
-class SerializationTest(unittest.TestCase):
+class SerializationTests(unittest.TestCase):
     """
     Test saving and loading of a T2I object.
     """
@@ -467,7 +483,7 @@ class SerializationTest(unittest.TestCase):
         self.assertEqual(T2I.load(self.path), t2i)
 
 
-class IndexTest(unittest.TestCase):
+class IndexTests(unittest.TestCase):
     """
     Test the Index class (and initializing a T2I with an index).
     """
@@ -498,7 +514,7 @@ class IndexTest(unittest.TestCase):
         self.assertEqual(index.highest_idx, max(high_indices))
 
 
-class ModuleImportTest(unittest.TestCase):
+class ModuleImportTests(unittest.TestCase):
     """
     Test the behavior of certain module imports.
     """

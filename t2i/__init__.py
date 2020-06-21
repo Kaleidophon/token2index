@@ -110,7 +110,6 @@ class T2I:
         special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens.
         """
-        assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
         assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
@@ -120,11 +119,17 @@ class T2I:
         if type(index) == dict:
             index = Index(index)
 
-        for special_token in [unk_token, eos_token] + list(special_tokens):
-            index[special_token] = index.highest_idx + 1
+        assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
+
+        all_special_tokens = [unk_token, eos_token] + list(special_tokens)
+
+        # Make sure that special tokens always come first by deleting them first if they already occur in index
+        for special_token in all_special_tokens:
+            if special_token in index:
+                del index[special_token]
 
         # Build index
-        self._index = {}
+        self._index = Index()
         for token, idx in index.items():
             if max_size is not None:
                 if len(self._index) == max_size:
@@ -132,6 +137,9 @@ class T2I:
 
             if counter is None or counter[token] >= min_freq:
                 self._index[token] = idx
+
+        for special_token in all_special_tokens:
+            self._index[special_token] = self._index.highest_idx + 1
 
         self.counter = counter
         self.max_size = max_size
