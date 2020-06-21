@@ -6,17 +6,14 @@ Unit tests for T2I class.
 import os
 import random
 import string
+import sys
 import unittest
 
 # PROJECT
 from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
-#   - Test iter
-#   - Test memory usage
-#   - Test behavior for unexpected input types
 #   - Test assignment of <unk> and <eos> when building vocab from file
-#   - Test reading in incorrect vocab files
 #   - Test counter / min_freq feature
 #   - Test max_size feature
 #   - Test init of T2I class with index, in particular
@@ -150,6 +147,15 @@ class IndexingTest(unittest.TestCase):
         self.assertEqual(t2i.t2i, t2i.stoi)
         self.assertEqual(t2i.i2t, t2i.itos)
 
+
+class MiscellaneousTest(unittest.TestCase):
+    """
+    Miscellaneous test for the T2I tests.
+    """
+
+    def setUp(self):
+        self.test_corpus1 = "A B C D B C A E"
+
     def test_representation(self):
         """
         Test whether the string representation works correctly.
@@ -168,6 +174,35 @@ class IndexingTest(unittest.TestCase):
         t2i = T2I.build(self.test_corpus1)
         with self.assertRaises(TypeError):
             t2i["banana"] = 66
+
+    def test_constant_memory_usage(self):
+        """
+        Make sure that a T2I object doesn't allocate more memory when unknown tokens are being looked up (like
+        defaultdicts do).
+        """
+        t2i = T2I.build(self.test_corpus1)
+        old_len = len(t2i)
+        old_mem_usage = sys.getsizeof(t2i)
+
+        # Look up unknown tokens
+        for token in [random_str(5) for _ in range(10)]:
+            t2i[token]
+
+        new_len = len(t2i)
+        new_mem_usage = sys.getsizeof(t2i)
+
+        self.assertEqual(old_len, new_len)
+        self.assertEqual(old_mem_usage, new_mem_usage)
+
+    def test_iter(self):
+        """
+        Test the __iter__ method.
+        """
+        t2i = T2I.build(self.test_corpus1)
+
+        contents = set([(k, v) for k, v in t2i])
+        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6)}
+        self.assertEqual(expected_contents, contents)
 
 
 class TypeConsistencyTest(unittest.TestCase):
@@ -269,6 +304,8 @@ class VocabFileTest(unittest.TestCase):
         num_tokens = 30
         self.tokens = [random_str(random.randint(3, 8)) for _ in range(num_tokens)]
 
+        # ### Proper vocab files ###
+
         # First vocab file format: One token per line
         self.vocab_path1 = "vocab1.txt"
         with open(self.vocab_path1, "w") as vocab_file1:
@@ -299,16 +336,45 @@ class VocabFileTest(unittest.TestCase):
                 "\n".join(["{}###{}".format(token, index) for token, index in zip(self.tokens, self.indices2)])
             )
 
+        # ### Improper vocab files ###
+        # First case: Very random and definitely wrong format
+        delimiters = ["\n", "\r", "\t"]
+        self.vocab_path5 = "vocab5.csv"
+        with open(self.vocab_path5, "w") as vocab_file5:
+            vocab_file5.write(
+                "\n".join(
+                    [
+                        "{}{}{}{}".format(token, random.choice(delimiters), index, random.choice(delimiters))
+                        for token, index in zip(self.tokens, self.indices2)
+                    ]
+                )
+            )
+
+        # Second case: Mixed file format
+        self.vocab_path6 = "vocab6.csv"
+        with open(self.vocab_path6, "w") as vocab_file6:
+            vocab_file6.write(
+                "\n".join(
+                    [
+                        token if random.random() > 0.5 else "{}\t{}".format(token, index)
+                        for token, index in zip(self.tokens, self.indices2)
+                    ]
+                )
+            )
+
     def tearDown(self):
         os.remove(self.vocab_path1)
         os.remove(self.vocab_path2)
         os.remove(self.vocab_path3)
         os.remove(self.vocab_path4)
+        os.remove(self.vocab_path5)
+        os.remove(self.vocab_path6)
 
     def test_building_from_file(self):
         """
         Test building a T2I object from a vocab file.
         """
+        # ### Proper vocab files ###
         # First vocab file format: One token per line
         t2i1 = T2I.from_file(self.vocab_path1)
         self.assertTrue([t2i1[token] == idx for token, idx in zip(self.tokens, range(len(self.tokens)))])
@@ -324,6 +390,15 @@ class VocabFileTest(unittest.TestCase):
         # Second vocab file format, but with different delimiter
         t2i4 = T2I.from_file(self.vocab_path4, delimiter="###")
         self.assertTrue([t2i4[token] == idx for token, idx in zip(self.tokens, self.indices2)])
+
+        # ### Improper vocab files ###
+        # Nonsensical format
+        with self.assertRaises(ValueError):
+            T2I.from_file(self.vocab_path5)
+
+        # Mixed format
+        with self.assertRaises(ValueError):
+            T2I.from_file(self.vocab_path6)
 
     def test_correct_indexing(self):
         """

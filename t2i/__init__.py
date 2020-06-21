@@ -442,7 +442,7 @@ class T2I:
 
     def __iter__(self) -> Iterator[Tuple[str, int]]:
         """ Iterate over this T2I index by iterating over tokens and their corresponding indices. """
-        for token, idx in self._index:
+        for token, idx in self._index.items():
             yield token, idx
 
     def tokens(self) -> Tuple[str, ...]:
