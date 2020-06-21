@@ -17,9 +17,6 @@ install:
   # dev dependencies
   - pip install coverage
   - pip install coveralls
-  - pip install sphinx
-  - pip install sphinx_bootstrap_theme
-  - pip install m2r
 
 script:
   # Unit test
