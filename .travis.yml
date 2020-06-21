@@ -17,6 +17,9 @@ install:
   # dev dependencies
   - pip install coverage
   - pip install coveralls
+  - pip install sphinx
+  - pip install sphinx_bootstrap_theme
+  - pip install m2r
 
 script:
   # Unit test
@@ -24,3 +27,5 @@ script:
   - coverage run -m unittest discover -v t2i "*_test.py"
   - coverage report --skip-covered
   - coveralls
+  - make clean
+  - make html
