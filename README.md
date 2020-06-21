@@ -12,7 +12,7 @@
 
 @TODO
 
-### Compability with other frameworks (NumPy, PyTorch, Tensorflow)
+### Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
 
 @TODO
 

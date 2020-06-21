@@ -447,7 +447,6 @@ class T2I:
     def save(self, path: str) -> None:
         """ Save T2I object as pickle. """
         with open(path, "wb") as f:
-            self.pickled = True
             pickle.dump(self, f)
 
     @staticmethod
