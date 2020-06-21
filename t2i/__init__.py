@@ -111,7 +111,7 @@ class T2I:
             An arbitrary number of additional special tokens.
         """
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
-        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
         if index is None:
@@ -203,7 +203,7 @@ class T2I:
         t2i: T2I
             New T2I object.
         """
-        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
         t2i = T2I._create_index(corpus, delimiter)
@@ -254,7 +254,7 @@ class T2I:
         t2i: T2I
             T2I object built from vocab file.
         """
-        assert max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
+        assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
         def _get_file_format(line: str) -> int:
