@@ -8,19 +8,45 @@
 
 @TODO Description
 
-### Example Usages
+### :sparkles: Feature Highlights
+
+* Easy indexing (of batches)
+
+    @TODO Example
+    
+* Easy conversion back to strings
+    
+    @TODO
+
+* Building and extending vocab
+
+    @TODO Example
+    
+* Vocab from file
+
+    @TODO Example 
+    
+* Compatibility with major frameworks! 
+
+    @TODO Example
+    
+* Fixed memory size
+
+    @TODO Example
+
+### :handshaking: Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
+
+@TODO NumPy example
+
+@TODO PyTorch 
+
+@TODO Tensorfow
+
+### :inbox_tray: Installation
 
 @TODO
 
-### Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
-
-@TODO
-
-### Installation
-
-@TODO
-
-### Citing
+### :mortar_board: Citing
 
 If you use ``token2index`` for research purposes, please cite the library using the following citation info:
 

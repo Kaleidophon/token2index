@@ -34,7 +34,7 @@ __version__ = "0.9.0"
 # - Write README
 # - GitHub repo description
 # - Release on PIP
-# - Release to i-machine-think
+# - Release to i-machine-think / friends (Santhosh, David, ...)
 # - General release
 
 
