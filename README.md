@@ -34,7 +34,7 @@
 
     @TODO Example
 
-### :handshaking: Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
+### :electric_plug: Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
 
 @TODO NumPy example
 
