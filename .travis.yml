@@ -27,6 +27,3 @@ script:
   - coverage run -m unittest discover -v t2i "*_test.py"
   - coverage report --skip-covered
   - coveralls
-  - cd docs
-  - make clean && make html
-  - ln -s html/index.html index.html
