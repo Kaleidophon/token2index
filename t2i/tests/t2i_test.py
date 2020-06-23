@@ -14,13 +14,26 @@ from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
 
 # TODO: Missing tests
 #   - Test counter / min_freq feature
-#   - Test max_size feature
 
 
 class InitTests(unittest.TestCase):
     """
     Test some behaviors when a T2I object is initialized.
     """
+
+    def setUp(self):
+        num_tokens = 30
+        self.tokens = [random_str(random.randint(3, 8)) for _ in range(num_tokens)]
+
+        # ### Proper vocab files ###
+
+        # First vocab file format: One token per line
+        self.vocab_path = "vocab_max_size.txt"
+        with open(self.vocab_path, "w") as vocab_file:
+            vocab_file.write("\n".join(self.tokens))
+
+    def tearDown(self):
+        os.remove(self.vocab_path)
 
     def test_init(self):
         """
@@ -35,6 +48,43 @@ class InitTests(unittest.TestCase):
         t2i = T2I({"<eos>": 10, "<unk>": 14})
         self.assertEqual(t2i["<unk>"], 0)
         self.assertEqual(t2i["<eos>"], 1)
+
+    def test_max_size(self):
+        """
+        Test whether indexing stops once maximum specified size of T2I object was reached.
+        """
+        # 1. Test during init
+        index = {n: n for n in range(10)}
+        t2i1 = T2I(index, max_size=3)
+        self.assertEqual(len(t2i1), 3)
+        self.assertTrue(all([i not in t2i1 for i in range(3, 10)]))
+
+        # With special tokens
+        t2i2 = T2I(index, max_size=10, special_tokens=("<mask>", "<flask>"))
+        self.assertEqual(len(t2i2), 10)
+        self.assertTrue(all([i not in t2i2 for i in range(6, 10)]))
+
+        # 2. Test using build()
+        corpus = "this is a long test sentence with exactly boring words"
+        t2i3 = T2I.build(corpus, max_size=3)
+        self.assertEqual(len(t2i3), 3)
+        self.assertTrue(all([token not in t2i3 for token in corpus.split()[3:]]))
+        self.assertTrue(all([i not in t2i3.indices() for i in range(3, 10)]))
+
+        # With special tokens
+        t2i4 = T2I.build(corpus, max_size=10, special_tokens=("<mask>", "<flask>"))
+        self.assertEqual(len(t2i4), 10)
+        self.assertTrue(all([token not in t2i4 for token in corpus.split()[6:]]))
+
+        # 3. Test when building from file
+        t2i5 = T2I.from_file(self.vocab_path, max_size=18)
+        self.assertEqual(len(t2i5), 18)
+        self.assertTrue(all([token not in t2i5 for token in self.tokens[16:]]))
+
+        # With special tokens
+        t2i6 = T2I.from_file(self.vocab_path, max_size=21, special_tokens=("<mask>", "<flask>"))
+        self.assertEqual(len(t2i6), 21)
+        self.assertTrue(all([token not in t2i6 for token in self.tokens[17:]]))
 
 
 class IndexingTests(unittest.TestCase):

@@ -29,7 +29,6 @@ __version__ = "0.9.0"
 
 # TODO
 # - Missing unittests
-# - Build documentation
 # - Github / Zenodo citation
 # (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
 # - Write README
@@ -132,7 +131,7 @@ class T2I:
         self._index = Index()
         for token, idx in index.items():
             if max_size is not None:
-                if len(self._index) == max_size:
+                if len(self._index) >= max_size - len(all_special_tokens):
                     break
 
             if counter is None or counter[token] >= min_freq:
