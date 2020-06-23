@@ -1,4 +1,4 @@
-# :zap: :card_index: token2index: A lightweight but powerful library for token indexing
+# |:zap:| |:card_index:| token2index: A lightweight but powerful library for token indexing
 
 [![Build](https://travis-ci.org/Kaleidophon/token2index.svg?branch=master)](https://travis-ci.org/github/Kaleidophon/token2index/builds)
 [![Documentation Status](https://readthedocs.org/projects/token2index/badge/?version=latest)](https://token2index.readthedocs.io/en/latest/?badge=latest)
@@ -9,7 +9,7 @@
 
 @TODO Description
 
-### :sparkles: Feature Highlights
+### |:sparkles:| Feature Highlights
 
 * Easy indexing (of batches)
 
@@ -35,7 +35,7 @@
 
     @TODO Example
 
-### :electric_plug: Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
+### |:electric_plug:| Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
 
 @TODO NumPy example
 
@@ -43,11 +43,11 @@
 
 @TODO Tensorfow
 
-### :inbox_tray: Installation
+### |:inbox_tray:| Installation
 
 @TODO
 
-### :mortar_board: Citing
+### |:mortar_board:| Citing
 
 If you use ``token2index`` for research purposes, please cite the library using the following citation info:
 

@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-.. mdinclude:: ../README.md
+.. mdinclude:: ./README_DOCS.md
 
 Documentation
 =============
