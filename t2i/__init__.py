@@ -1,6 +1,6 @@
 """
 Define a lightweight data structure to store and look up the indices belonging to arbitrary tokens.
-Originally based on the [diagnnose](https://github.com/i-machine-think/diagnnose) W2I class.
+Originally based on the `diagnnose <https://github.com/i-machine-think/diagnnose>`_ W2I class.
 """
 
 import codecs
