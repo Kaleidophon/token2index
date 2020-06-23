@@ -20,7 +20,10 @@
 import os
 import sys
 
+from m2r import MdInclude
+
 import sphinxbootstrap4theme
+from recommonmark.transform import AutoStructify
 
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../t2i"))
@@ -36,7 +39,7 @@ from t2i import __version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.githubpages"]
+extensions = ["sphinx.ext.autodoc", "sphinx.ext.githubpages", "sphinxemoji.sphinxemoji", "recommonmark"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["templates"]
@@ -157,3 +160,20 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+
+def setup(app):
+    config = {
+        # 'url_resolver': lambda url: github_doc_root + url,
+        "auto_toc_tree_section": "Contents",
+        "enable_eval_rst": True,
+    }
+    app.add_config_value("recommonmark_config", config, True)
+    app.add_transform(AutoStructify)
+
+    # from m2r to make `mdinclude` work
+    app.add_config_value("no_underscore_emphasis", False, "env")
+    app.add_config_value("m2r_parse_relative_links", False, "env")
+    app.add_config_value("m2r_anonymous_references", False, "env")
+    app.add_config_value("m2r_disable_inline_math", False, "env")
+    app.add_directive("mdinclude", MdInclude)

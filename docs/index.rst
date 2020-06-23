@@ -7,7 +7,7 @@
 .. mdinclude:: ../README.md
 
 Documentation
--------------
+=============
 
 .. automodule:: t2i
    :members:
