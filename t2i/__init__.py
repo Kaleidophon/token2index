@@ -64,6 +64,13 @@ class Index(dict):
 
         return super().__getitem__(key)
 
+    def items(self) -> Iterable[Tuple[str, int]]:
+        """
+        The same as a usual dict items(), except that the entries are sorted by index (this has otherwise proven to
+        create problems in Python < 3.6).
+        """
+        return ((token, idx) for token, idx in sorted(super().items(), key=lambda tpl: tpl[1]))
+
     @property
     def highest_idx(self) -> int:
         """
