@@ -20,6 +20,8 @@
 import os
 import sys
 
+import sphinxbootstrap4theme
+
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../t2i"))
 from t2i import __version__
@@ -86,14 +88,14 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
-# html_theme_path =
+html_theme = "sphinxbootstrap4theme"
+html_theme_path = [sphinxbootstrap4theme.get_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {"bootswatch_theme": "lumen"}
+# html_theme_options = {"bootswatch_theme": "lumen"}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

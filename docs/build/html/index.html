@@ -1,16 +1,22 @@
-<!DOCTYPE html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>:zap::card_index: token2index: A lightweight but powerful library for token indexing &#8212; token2index 0.9.0 documentation</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    
+    <title>Documentation &#8212; token2index 0.9.0 documentation</title>
+
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootswatch-3.3.6/lumen/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-4.3.1-dist/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinxbootstrap4.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -25,190 +31,109 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-4.3.1-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/sphinxbootstrap4.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-
+    <link rel="search" title="Search" href="search.html" /> 
   </head>
   <body role="document">
-
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="#">
-          token2index</a>
-        <span class="navbar-text navbar-version pull-left"><b>0.9.0</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
-            
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"></ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">:zap::card_index: token2index: A lightweight but powerful library for token indexing</a><ul>
-<li><a class="reference internal" href="#module-t2i">Documentation</a></li>
-</ul>
-</li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/index.rst.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
-
+  <nav class="navbar navbar-expand-md  fixed-top navbar-dark bg-dark flex-wrap">
+    <button class="navbar-toggler ml-auto py-2" type="button" data-toggle="collapse" data-target="#exCollapsingNavbar2">
+      &#9776;
+    </button>
+      <div class="navbar-collapse collapse" id="exCollapsingNavbar2">
+           <a class="navbar-brand py-1" href="#">
+                  token2index
+          </a>
+          <span class="navbar-text navbar-version pb-0 pt-1"><b>0.9.0</b></span>
+          <ul class="navbar-nav mr-auto">
           
-            
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
+              <li class="nav-item dropdown d-none d-sm-block" id="navbar-pages">
+                  <a class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
+                  <ul class="dropdown-menu">
+                  
+                  </ul>
+              </li>
+          </ul>
+          <div class="dropdown-divider d-block d-sm-none mb-4"></div>
+             
+<form class="form-inline" action="search.html" method="get">
   <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
   <input type="hidden" name="check_keywords" value="yes" />
   <input type="hidden" name="area" value="default" />
 </form>
-          
-        </div>
-    </div>
+      </div>
+
+      <!--<div class="row hidden-sm-up">
+          <div class="collapse navbar-toggleable-xs container" id="exCollapsingNavbar2">
+              <div class="container">
+             　　 <a class="navbar-brand" href="#">
+                      token2index
+                  </a>
+              </div>
+              <ul class="nav navbar-nav">
+              </ul>
+              <div class="dropdown-divider"></div>
+              <div class="navbar-text">search<div>
+              
+<form class="form-inline" action="search.html" method="get">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          </div>
+      </div>-->
+    </nav>
   </div>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
-      
-  <div class="section" id="zap-card-index-token2index-a-lightweight-but-powerful-library-for-token-indexing">
-<h1>:zap::card_index: token2index: A lightweight but powerful library for token indexing<a class="headerlink" href="#zap-card-index-token2index-a-lightweight-but-powerful-library-for-token-indexing" title="Permalink to this headline">¶</a></h1>
-<a class="reference external image-reference" href="https://travis-ci.org/github/Kaleidophon/token2index/builds"><img alt="Build" src="https://travis-ci.org/Kaleidophon/token2index.svg?branch=master" /></a>
-<a class="reference external image-reference" href="https://coveralls.io/github/Kaleidophon/token2index?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/Kaleidophon/token2index/badge.svg?branch=master" /></a>
-<a class="reference external image-reference" href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
-<a class="reference external image-reference" href="https://github.com/python/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
-<p>&#64;TODO Description</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">sparkles:</th><td class="field-body">Feature Highlights</td>
-</tr>
-</tbody>
-</table>
-<hr class="docutils" />
-<ul>
-<li><p class="first">Easy indexing (of batches)</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p class="first">Easy conversion back to strings</p>
-<blockquote>
-<div><p>&#64;TODO</p>
-</div></blockquote>
-</li>
-<li><p class="first">Building and extending vocab</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p class="first">Vocab from file</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p class="first">Compatibility with major frameworks!</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p class="first">Fixed memory size</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
+    <div class="related d-flex justify-content-between bg-light flex-wrap" role="navigation" aria-label="related navigation">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="#">token2index 0.9.0 documentation</a></li>
+            <li class="breadcrumb-item active">Documentation</li>
+        </ol>
+       <div>
+          <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+           </div>
+       </div>
+    </div>
+
+  <div class="main container-fluid">
+    <div class="row"> 
+      <div class="sphinxsidebar d-none d-md-block">
+        <div class="sphinxsidebarwrapper">          
+            <h4>Table Of Contents</h4>
+            
+            
+                <!-- Local TOC -->
+                <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Documentation</a></li>
 </ul>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">electric_plug:</th><td class="field-body">Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)</td>
-</tr>
-</tbody>
-</table>
-<hr class="docutils" />
-<p>&#64;TODO NumPy example</p>
-<p>&#64;TODO PyTorch</p>
-<p>&#64;TODO Tensorfow</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">inbox_tray:</th><td class="field-body">Installation</td>
-</tr>
-</tbody>
-</table>
-<hr class="docutils" />
-<p>&#64;TODO</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">mortar_board:</th><td class="field-body">Citing</td>
-</tr>
-</tbody>
-</table>
-<hr class="docutils" />
-<p>If you use <code class="docutils literal"><span class="pre">token2index</span></code> for research purposes, please cite the library using the following citation info:</p>
-<div class="highlight-guess"><div class="highlight"><pre><span></span>@article{token2index,
-    title={token2index: A lightweight but powerful library for token indexing},
-    author={Dennis Ulmer},
-    year={2020},
-}
-</pre></div>
 </div>
-<div class="section" id="module-t2i">
-<span id="documentation"></span><h2>Documentation<a class="headerlink" href="#module-t2i" title="Permalink to this headline">¶</a></h2>
+            
+          
+<div id="searchbox" style="display: none">
+    <form class="form search" action="search.html" method="get">
+      <input type="text" name="q" class="form-control" placeholder="Search..." />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <ul class="this-page-menu list-unstyled text-right">
+    <li><a href="_sources/index.rst.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+        </div>
+      </div> 
+
+      <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-t2i">
+<span id="documentation"></span><h1>Documentation<a class="headerlink" href="#module-t2i" title="Permalink to this headline">¶</a></h1>
 <p>Define a lightweight data structure to store and look up the indices belonging to arbitrary tokens.
 Originally based on the [diagnnose](<a class="reference external" href="https://github.com/i-machine-think/diagnnose">https://github.com/i-machine-think/diagnnose</a>) W2I class.</p>
 <dl class="class">
@@ -380,24 +305,23 @@ value. In this case, after every lookup of a new token, this value for an unknow
 </dd></dl>
 
 </div>
-</div>
 
 
+          </div>
+        </div>
+      </div>
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
-    <p>
-        &copy; Copyright 2020, Dennis Ulmer.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.<br/>
-    </p>
-  </div>
+      <div class="clearer"></div>
+      </div>
+    </div>
+<footer class="footer d-flex justify-content-between flex-wrap">
+    <div class="copyright">
+        <div>&copy; Copyright 2020, Dennis Ulmer.</div>
+      <div>Generated by <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.5.6 using <a href="https://github.com/myyasuda/sphinxbootstrap4theme">sphinxbootstrap4theme</a> 0.6.0.</div>
+    </div>
+    <div>
+        <a href="#" class="btn btn-primary btn-sm" role="botton">Back to top</a>
+    </div>
 </footer>
   </body>
 </html>
