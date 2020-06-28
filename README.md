@@ -24,32 +24,56 @@ shown below.
     >>> t2i
     T2I(Size: 13, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'parn': 9, 'fell': 10, '<unk>': 11, '<eos>': 12})
     ```
+  
+    The index can always be extended again later using `extend()`:
+    
+    ```python
+    >>> t2i = t2i.extend("completely new words")
+    T2I(Size: 16, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'barn': 9, 'fell': 10, 'completely': 13, 'new': 14, 'words': 15, '<unk>': 16, '<eos>': 17})
+    ```
 
 * Easy indexing (of batches)
+    
+    Index multiple sentences at once in a single function call!
 
-    @TODO Example
+    ```python
+    >>> t2i.index(["the green horse raced <eos>", "ideas are a dream <eos>"])
+    [[5, 1, 6, 7, 12], [2, 11, 11, 3, 12]]
+    ```
+    
+    where unknown tokens are always mapped to `unk_token`.
     
 * Easy conversion back to strings
     
-    @TODO
+    Reverting indices back to strings is equally as easy:
+    
+    ```python
+    >>> t2i.unindex([5, 14, 16, 3, 6])
+    'the new <unk> dream horse'
+    ```
     
 * Vocab from file
 
-    @TODO Example 
-    
-* Compatibility with major frameworks! 
-
-    @TODO Example
+    Using `T2I.from_file()`, the index can be created directly by reading from an existing vocab file. 
+    Refer to its documentation [here](https://token2index.readthedocs.io/en/latest/#t2i.T2I.from_file) for more info.
     
 * Fixed memory size
 
-    @TODO Example
+    Although the `defaultdict` class from Python's `collections` package also posses the functionality to map unknown 
+    keys to a certain value, it grows in size for every new key. `T2I` memory size stays fixed after the index is built.
     
 * Support for special tokens
     
-    @TODO Exmaple
+    To enable flexibility in modern NLP applications, `T2I` allows for an arbitrary number of special tokens (like a 
+    masking token) during init! 
+    
+    ```python
+    >>> t2i = T2I(special_tokens=["<mask>"])
+    >>> t2i
+    T2I(Size: 3, unk_token: <unk>, eos_token: <eos>, {'<unk>': 0, '<eos>': 1, '<mask>': 2})
+    ```
 
-### :electric_plug: Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)
+### :electric_plug: Compatibility with other frameworks (PyTorch, Tensorflow)
 
 @TODO NumPy example
 
