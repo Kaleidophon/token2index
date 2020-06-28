@@ -18,10 +18,12 @@ shown below.
 
     One way to build the index from a corpus is using the build() function:
 
-    > from t2i import T2I
-    > t2i = T2I.build(["colorless green ideas dream furiously", "the horse raced past the barn fell"])
-    > t2i
+    ```python
+    >>> from t2i import T2I
+    >>> t2i = T2I.build(["colorless green ideas dream furiously", "the horse raced past the barn fell"])
+    >>> t2i
     T2I(Size: 13, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'parn': 9, 'fell': 10, '<unk>': 11, '<eos>': 12})
+    ```
 
 * Easy indexing (of batches)
 
