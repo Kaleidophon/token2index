@@ -29,7 +29,6 @@ __version__ = "0.9.1"
 
 
 # TODO
-# - Change license?
 # - Github / Zenodo citation
 # (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
 # - Write README
