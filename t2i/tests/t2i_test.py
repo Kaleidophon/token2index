@@ -3,6 +3,7 @@ Unit tests for T2I class.
 """
 
 # STD
+from collections import Counter
 import os
 import random
 import string
@@ -11,9 +12,6 @@ import unittest
 
 # PROJECT
 from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
-
-# TODO: Missing tests
-#   - Test counter / min_freq feature
 
 
 class InitTests(unittest.TestCase):
@@ -85,6 +83,70 @@ class InitTests(unittest.TestCase):
         t2i6 = T2I.from_file(self.vocab_path, max_size=21, special_tokens=("<mask>", "<flask>"))
         self.assertEqual(len(t2i6), 21)
         self.assertTrue(all([token not in t2i6 for token in self.tokens[17:]]))
+
+
+class CountTests(unittest.TestCase):
+    """
+    Test restrictions of the index by token indices.
+    """
+
+    def setUp(self):
+        self.corpus = [
+            "this is a test sentence .",
+            "the mailman bites the dog .",
+            "colorless green ideas sleep furiously .",
+            "the horse raised past the barn fell .",
+        ]
+        self.counter = Counter(" ".join(self.corpus[:1] * 4 + self.corpus[:2] * 3 + self.corpus[:3] * 2).split())
+        self.min_freq = 5
+
+        self.vocab_path = "count_vocab.txt"
+
+        self.index = Index()
+        [self.index[token] for sentence in self.corpus for token in sentence.split()]
+
+        with open(self.vocab_path, "w") as vocab_file:
+            vocab_file.write("\n".join(self.index.keys()))
+
+    def tearDown(self):
+        os.remove(self.vocab_path)
+
+    def test_improper_min_freq(self):
+        """
+        Test whether weird values for min_freq raise an AssertionError.
+        """
+        with self.assertRaises(AssertionError):
+            T2I({}, min_freq=0)
+
+        with self.assertRaises(AssertionError):
+            T2I({}, min_freq=-1)
+
+    def test_count_init(self):
+        """
+        Test whether tokens are ignored during the normal T2I initialization when their frequency is too low.
+        """
+        t2i = T2I(self.index, counter=self.counter, min_freq=self.min_freq)
+        self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
+
+    def test_count_build(self):
+        """
+        Test whether tokens are ignored when using build() when their frequency is too low.
+        """
+        t2i = T2I.build(self.corpus, counter=self.counter, min_freq=self.min_freq)
+        self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
+
+    def test_count_vocab_file(self):
+        """
+        Test whether tokens are ignored when building the T2I object from a vocab file.
+        """
+        t2i = T2I.from_file(self.vocab_path, counter=self.counter, min_freq=self.min_freq)
+        self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
+
+    def _check_freq_filtering(self, t2i: T2I, counter: Counter, min_freq: int) -> bool:
+        """
+        Check whether tokens with a low frequency were successfully filtered
+        """
+        return all([token not in t2i for token, freq in counter.items() if freq < min_freq])
 
 
 class IndexingTests(unittest.TestCase):

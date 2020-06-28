@@ -8,6 +8,7 @@ from collections import Counter
 import sys
 import pickle
 from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple, Iterator
+import warnings
 
 # LIB
 from t2i.decorators import indexing_consistency, unindexing_consistency
@@ -24,11 +25,11 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 
 # TODO
-# - Missing unittests
+# - Change license?
 # - Github / Zenodo citation
 # (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
 # - Write README
@@ -118,6 +119,9 @@ class T2I:
         """
         assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
+
+        if counter is not None and min_freq == 1:
+            warnings.warn("Token frequencies were given but min_freq is still set to 1?")
 
         if index is None:
             index = {}
