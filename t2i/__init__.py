@@ -32,10 +32,7 @@ __version__ = "0.9.1"
 # - Github / Zenodo citation
 # (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
 # - Write README
-# - GitHub repo description
 # - Release on PIP
-# - Release to i-machine-think / friends (Santhosh, David, ...)
-# - General release (LinkedIn, Reddit, Twitter ...)
 
 
 class Index(dict):
