@@ -661,7 +661,9 @@ class ModuleImportTests(unittest.TestCase):
 
 class FrameworkCompatibilityTests(unittest.TestCase):
     """
-    Test compatibility with other libraries.
+    Test compatibility with other libraries. Because tests will be run twice - once having these libraries installed and
+    once when they are missing - the tests require try / except blocks, so that the tests itself don't produce errors.
+    Therefore, this test will essentially be skipped in the latter case.
     """
 
     def setUp(self):
@@ -683,43 +685,55 @@ class FrameworkCompatibilityTests(unittest.TestCase):
         """
         Test compatibility with Numpy.
         """
-        import numpy as np
+        try:
+            import numpy as np
 
-        # Single indexed sentence
-        index_array = np.array(self.t2i.index(self.sentences[0]))
-        self.assertEqual(self.sentences[0], self.t2i.unindex(index_array))
+            # Single indexed sentence
+            index_array = np.array(self.t2i.index(self.sentences[0]))
+            self.assertEqual(self.sentences[0], self.t2i.unindex(index_array))
 
-        # Indexed batch
-        indexed_batch = np.array(self.t2i.index(self.sentences))
-        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+            # Indexed batch
+            indexed_batch = np.array(self.t2i.index(self.sentences))
+            self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+        except:
+            pass
 
     def test_pytorch_compatibility(self):
         """
         Test compatibility with PyTorch.
         """
-        import torch
+        try:
+            import torch
 
-        # Single indexed sentence
-        index_tensor = torch.Tensor(self.t2i.index(self.sentences[0]))
-        self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
+            # Single indexed sentence
+            index_tensor = torch.Tensor(self.t2i.index(self.sentences[0]))
+            self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
 
-        # Indexed batch
-        indexed_batch = torch.Tensor(self.t2i.index(self.sentences))
-        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+            # Indexed batch
+            indexed_batch = torch.Tensor(self.t2i.index(self.sentences))
+            self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+        except:
+            pass
 
     def test_tensorflow_compatibility(self):
         """
         Test compatibility with Tensorflow.
         """
-        import tensorflow as tf
+        try:
+            import tensorflow as tf
 
-        # Single indexed sentence
-        index_tensor = tf.convert_to_tensor(self.t2i.index(self.sentences[0]), dtype=tf.int32)
-        self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
+            # Single indexed sentence
+            index_tensor = tf.convert_to_tensor(self.t2i.index(self.sentences[0]), dtype=tf.int32)
+            self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
 
-        # Indexed batch
-        indexed_batch = tf.convert_to_tensor(self.t2i.index(self.sentences), dtype=tf.int32)
-        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+            # Indexed batch
+            indexed_batch = tf.convert_to_tensor(self.t2i.index(self.sentences), dtype=tf.int32)
+            self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+        except:
+            pass
 
 
 def random_str(length: int) -> str:
