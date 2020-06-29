@@ -16,7 +16,7 @@ install:
   # dev dependencies
   - pip install coverage
   - pip install coveralls
-  - pip install pytorch
+  - pip install torch
   - pip install tensorflow
   - pip install numpy
 
