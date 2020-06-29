@@ -14,7 +14,7 @@ shown below.
 
 ### :sparkles: Feature Highlights
 
-* Building and extending vocab
+* **Building and extending vocab**
 
     One way to build the index from a corpus is using the build() function:
 
@@ -32,7 +32,7 @@ shown below.
     T2I(Size: 16, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'barn': 9, 'fell': 10, 'completely': 13, 'new': 14, 'words': 15, '<unk>': 16, '<eos>': 17})
     ```
 
-* Easy indexing (of batches)
+* **Easy indexing (of batches)**
     
     Index multiple sentences at once in a single function call!
 
@@ -43,7 +43,7 @@ shown below.
     
     where unknown tokens are always mapped to `unk_token`.
     
-* Easy conversion back to strings
+* **Easy conversion back to strings**
     
     Reverting indices back to strings is equally as easy:
     
@@ -52,20 +52,20 @@ shown below.
     'the new <unk> dream horse'
     ```
     
-* Vocab from file
+* **Vocab from file**
 
     Using `T2I.from_file()`, the index can be created directly by reading from an existing vocab file. 
     Refer to its documentation [here](https://token2index.readthedocs.io/en/latest/#t2i.T2I.from_file) for more info.
     
-* Fixed memory size
+* **Fixed memory size**
 
     Although the `defaultdict` class from Python's `collections` package also posses the functionality to map unknown 
     keys to a certain value, it grows in size for every new key. `T2I` memory size stays fixed after the index is built.
     
-* Support for special tokens
+* **Support for special tokens**
     
     To enable flexibility in modern NLP applications, `T2I` allows for an arbitrary number of special tokens (like a 
-    masking token) during init! 
+    masking or a padding token) during init! 
     
     ```python
     >>> t2i = T2I(special_tokens=["<mask>"])
@@ -75,11 +75,17 @@ shown below.
 
 ### :electric_plug: Compatibility with other frameworks (PyTorch, Tensorflow)
 
-@TODO NumPy example
+It is also ensured that `T2I` is easily compatible with modern Deep Learning frameworks like PyTorch and 
+Tensorflow, without needing them as requirements:
 
-@TODO PyTorch 
+**PyTorch**
 
-@TODO Tensorfow
+    ```python
+    >>> t = torch.LongTensor(t2i.index("the completely new words are ideas"))
+    >>> t
+    tensor([ 5, 13, 14, 15, 16,  2])
+    >>> t2i.unindex(t.numpy())
+    ```
 
 ### :inbox_tray: Installation
 

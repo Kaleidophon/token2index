@@ -11,7 +11,6 @@ python:
 # command to install dependencies
 install:
   - pip install -U pip
-  # - pip -q install -r requirements.txt
   # - pip install -e .
 
   # dev dependencies
@@ -19,8 +18,10 @@ install:
   - pip install coveralls
 
 script:
-  # Unit test
+  # Unit test - first run without external libraries
   - python -m unittest discover -v t2i "*_test.py"
+  # Now with other libraries
+  - pip -q install -r t2i/tests/test_requirements.txt
   - coverage run -m unittest discover -v t2i "*_test.py"
   - coverage report --skip-covered
   - coveralls

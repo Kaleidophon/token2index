@@ -659,6 +659,69 @@ class ModuleImportTests(unittest.TestCase):
         self.assertEqual(type(t2i.__version__), str)
 
 
+class FrameworkCompatibilityTests(unittest.TestCase):
+    """
+    Test compatibility with other libraries.
+    """
+
+    def setUp(self):
+        corpus = [
+            "this is a test sentence .",
+            "the mailman bites the dog .",
+            "colorless green ideas sleep furiously .",
+            "the horse raised past the barn fell .",
+        ]
+        self.sentences = [
+            "this green dog furiously bites the horse . <eos>",
+            "sleep is a past test . <eos> <pad> <pad>",
+            "the test is a barn . <eos> <pad> <pad>",
+        ]
+
+        self.t2i = T2I.build(corpus, special_tokens=("<pad>",))
+
+    def test_numpy_compatibility(self):
+        """
+        Test compatibility with Numpy.
+        """
+        import numpy as np
+
+        # Single indexed sentence
+        index_array = np.array(self.t2i.index(self.sentences[0]))
+        self.assertEqual(self.sentences[0], self.t2i.unindex(index_array))
+
+        # Indexed batch
+        indexed_batch = np.array(self.t2i.index(self.sentences))
+        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+    def test_pytorch_compatibility(self):
+        """
+        Test compatibility with PyTorch.
+        """
+        import torch
+
+        # Single indexed sentence
+        index_tensor = torch.Tensor(self.t2i.index(self.sentences[0]))
+        self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
+
+        # Indexed batch
+        indexed_batch = torch.Tensor(self.t2i.index(self.sentences))
+        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+    def test_tensorflow_compatibility(self):
+        """
+        Test compatibility with Tensorflow.
+        """
+        import tensorflow as tf
+
+        # Single indexed sentence
+        index_tensor = tf.convert_to_tensor(self.t2i.index(self.sentences[0]), dtype=tf.int32)
+        self.assertEqual(self.sentences[0], self.t2i.unindex(index_tensor))
+
+        # Indexed batch
+        indexed_batch = tf.convert_to_tensor(self.t2i.index(self.sentences), dtype=tf.int32)
+        self.assertEqual(self.sentences, self.t2i.unindex(indexed_batch))
+
+
 def random_str(length: int) -> str:
     """ Return a random, lowercase string of a certain length. """
     return "".join([random.choice(string.ascii_lowercase) for _ in range(length)])
