@@ -11,17 +11,18 @@ python:
 # command to install dependencies
 install:
   - pip install -U pip
+  - pip -q install -r t2i/tests/test_requirements.txt
   # - pip install -e .
 
   # dev dependencies
   - pip install coverage
   - pip install coveralls
+  - pip install pytorch
+  - pip install tensorflow
+  - pip install numpy
 
 script:
-  # Unit test - first run without external libraries
   - python -m unittest discover -v t2i "*_test.py"
-  # Now with other libraries
-  - pip -q install -r t2i/tests/test_requirements.txt
   - coverage run -m unittest discover -v t2i "*_test.py"
   - coverage report --skip-covered
   - coveralls
