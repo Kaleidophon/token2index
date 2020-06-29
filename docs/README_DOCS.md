@@ -80,39 +80,39 @@ Tensorflow, without needing them as requirements:
 
 **Numpy**
 
-    ```python
-    >>> import numpy as np
-    >>> t = np.array(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
-    >>> t
-    array([[ 5, 15, 16, 17,  2, 18],
-       [ 5,  1,  6, 18, 19, 19]])
-    >>> t2i.unindex(t)
-    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
-    ```
+```python
+>>> import numpy as np
+>>> t = np.array(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
+>>> t
+array([[ 5, 15, 16, 17,  2, 18],
+   [ 5,  1,  6, 18, 19, 19]])
+>>> t2i.unindex(t)
+['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
+```
 
 **PyTorch**
 
-    ```python
-    >>> import torch
-    >>> t = torch.LongTensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
-    >>> t
-    tensor([[ 5, 15, 16, 17,  2, 18],
-        [ 5,  1,  6, 18, 19, 19]])
-    >>> t2i.unindex(t)
-    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
-    ```
+```python
+>>> import torch
+>>> t = torch.LongTensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
+>>> t
+tensor([[ 5, 15, 16, 17,  2, 18],
+    [ 5,  1,  6, 18, 19, 19]])
+>>> t2i.unindex(t)
+['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
+```
 
 **Tensorflow**
 
-    ```python
-    >>> import tensorflow as tf
-    >>> t = tf.convert_to_tensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]), dtype=tf.int32)
-    >>> t
-    tensor([[ 5, 15, 16, 17,  2, 18],
-        [ 5,  1,  6, 18, 19, 19]])
-    >>> t2i.unindex(t)
-    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
-    ```
+```python
+>>> import tensorflow as tf
+>>> t = tf.convert_to_tensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]), dtype=tf.int32)
+>>> t
+tensor([[ 5, 15, 16, 17,  2, 18],
+    [ 5,  1,  6, 18, 19, 19]])
+>>> t2i.unindex(t)
+['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
+```
 
 ### |:inbox_tray:| Installation
 
