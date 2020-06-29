@@ -11,7 +11,6 @@ python:
 # command to install dependencies
 install:
   - pip install -U pip
-  - pip -q install -r t2i/tests/test_requirements.txt
   # - pip install -e .
 
   # dev dependencies
