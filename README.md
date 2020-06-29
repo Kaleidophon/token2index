@@ -73,18 +73,45 @@ shown below.
     T2I(Size: 3, unk_token: <unk>, eos_token: <eos>, {'<unk>': 0, '<eos>': 1, '<mask>': 2})
     ```
 
-### :electric_plug: Compatibility with other frameworks (PyTorch, Tensorflow)
+### :electric_plug: Compatibility with other frameworks (Numpy, PyTorch, Tensorflow)
 
-It is also ensured that `T2I` is easily compatible with modern Deep Learning frameworks like PyTorch and 
+It is also ensured that `T2I` is easily compatible with frameworks like Numpy, PyTorch and 
 Tensorflow, without needing them as requirements:
+
+**Numpy**
+
+    ```python
+    >>> import numpy as np
+    >>> t = np.array(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
+    >>> t
+    array([[ 5, 15, 16, 17,  2, 18],
+       [ 5,  1,  6, 18, 19, 19]])
+    >>> t2i.unindex(t)
+    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
+    ```
 
 **PyTorch**
 
     ```python
-    >>> t = torch.LongTensor(t2i.index("the completely new words are ideas"))
+    >>> import torch
+    >>> t = torch.LongTensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]))
     >>> t
-    tensor([ 5, 13, 14, 15, 16,  2])
-    >>> t2i.unindex(t.numpy())
+    tensor([[ 5, 15, 16, 17,  2, 18],
+        [ 5,  1,  6, 18, 19, 19]])
+    >>> t2i.unindex(t)
+    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
+    ```
+
+**Tensorflow**
+
+    ```python
+    >>> import tensorflow as tf
+    >>> t = tf.convert_to_tensor(t2i.index(["the new words are ideas <eos>", "the green horse <eos> <pad> <pad>"]), dtype=tf.int32)
+    >>> t
+    tensor([[ 5, 15, 16, 17,  2, 18],
+        [ 5,  1,  6, 18, 19, 19]])
+    >>> t2i.unindex(t)
+    ['the new words <unk> ideas <eos>', 'the green horse <eos> <pad> <pad>']
     ```
 
 ### :inbox_tray: Installation

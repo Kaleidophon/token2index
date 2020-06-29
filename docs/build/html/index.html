@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     
-    <title>⚡ 📇 token2index: A lightweight but powerful library for token indexing &#8212; token2index 0.9.0 documentation</title>
+    <title>⚡ 📇 token2index: A lightweight but powerful library for token indexing &#8212; token2index 0.9.2 documentation</title>
 
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -33,7 +33,7 @@
            <a class="navbar-brand py-1" href="#">
                   token2index
           </a>
-          <span class="navbar-text navbar-version pb-0 pt-1"><b>0.9.0</b></span>
+          <span class="navbar-text navbar-version pb-0 pt-1"><b>0.9.2</b></span>
           <ul class="navbar-nav mr-auto">
           
               <li class="nav-item dropdown d-none d-sm-block" id="navbar-pages">
@@ -76,7 +76,7 @@
 
     <div class="related d-flex justify-content-between bg-light flex-wrap" role="navigation" aria-label="related navigation">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="#">token2index 0.9.0 documentation</a></li>
+            <li class="breadcrumb-item"><a href="#">token2index 0.9.2 documentation</a></li>
             <li class="breadcrumb-item active">⚡ 📇 token2index: A lightweight but powerful library for token indexing</li>
         </ol>
        <div>
@@ -96,7 +96,7 @@
                 <div class="local-toc"><ul>
 <li><a class="reference internal" href="#">⚡ 📇 token2index: A lightweight but powerful library for token indexing</a><ul>
 <li><a class="reference internal" href="#sparkles-feature-highlights">✨ Feature Highlights</a></li>
-<li><a class="reference internal" href="#electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow">🔌 Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)</a></li>
+<li><a class="reference internal" href="#electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow">🔌 Compatibility with other frameworks (Numpy, PyTorch, Tensorflow)</a></li>
 <li><a class="reference internal" href="#inbox-tray-installation">📥 Installation</a></li>
 <li><a class="reference internal" href="#mortar-board-citing">🎓 Citing</a></li>
 </ul>
@@ -134,51 +134,122 @@
 <a class="reference external image-reference" href="https://coveralls.io/github/Kaleidophon/token2index?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/Kaleidophon/token2index/badge.svg?branch=master" /></a>
 <a class="reference external image-reference" href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
 <a class="reference external image-reference" href="https://github.com/python/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a>
-<p>&#64;TODO Description</p>
+<p><code class="docutils literal notranslate"><span class="pre">token2index</span></code> is a small yet powerful library facilitating the fast and easy creation of a data structure mapping
+tokens to indices, primarily aimed at applications for Natural Language Processing. The library is fully tested, and
+does not require any additional requirements. The documentation can be found <a class="reference external" href="token2index.readthedocs.io">here</a>, some feature highlights are
+shown below.</p>
 <div class="section" id="sparkles-feature-highlights">
 <h2>✨ Feature Highlights<a class="headerlink" href="#sparkles-feature-highlights" title="Permalink to this headline">¶</a></h2>
 <ul>
-<li><p>Easy indexing (of batches)</p>
+<li><p><strong>Building and extending vocab</strong></p>
 <blockquote>
-<div><p>&#64;TODO Example</p>
+<div><p>One way to build the index from a corpus is using the build() function:</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>   <span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">t2i</span> <span class="kn">import</span> <span class="n">T2I</span>
+   <span class="o">&gt;&gt;&gt;</span> <span class="n">t2i</span> <span class="o">=</span> <span class="n">T2I</span><span class="o">.</span><span class="n">build</span><span class="p">([</span><span class="s2">&quot;colorless green ideas dream furiously&quot;</span><span class="p">,</span> <span class="s2">&quot;the horse raced past the barn fell&quot;</span><span class="p">])</span>
+   <span class="o">&gt;&gt;&gt;</span> <span class="n">t2i</span>
+   <span class="n">T2I</span><span class="p">(</span><span class="n">Size</span><span class="p">:</span> <span class="mi">13</span><span class="p">,</span> <span class="n">unk_token</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">unk</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">eos_token</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">eos</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;colorless&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;green&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;ideas&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;dream&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;furiously&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;the&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;horse&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;raced&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s1">&#39;past&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s1">&#39;parn&#39;</span><span class="p">:</span> <span class="mi">9</span><span class="p">,</span> <span class="s1">&#39;fell&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;&lt;unk&gt;&#39;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span> <span class="s1">&#39;&lt;eos&gt;&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
+
+<span class="n">The</span> <span class="n">index</span> <span class="n">can</span> <span class="n">always</span> <span class="n">be</span> <span class="n">extended</span> <span class="n">again</span> <span class="n">later</span> <span class="n">using</span> <span class="sb">``</span><span class="n">extend</span><span class="p">()</span><span class="sb">``</span>\ <span class="p">:</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span> <span class="o">=</span> <span class="n">t2i</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s2">&quot;completely new words&quot;</span><span class="p">)</span>
+<span class="go">T2I(Size: 16, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, {&#39;colorless&#39;: 0, &#39;green&#39;: 1, &#39;ideas&#39;: 2, &#39;dream&#39;: 3, &#39;furiously&#39;: 4, &#39;the&#39;: 5, &#39;horse&#39;: 6, &#39;raced&#39;: 7, &#39;past&#39;: 8, &#39;barn&#39;: 9, &#39;fell&#39;: 10, &#39;completely&#39;: 13, &#39;new&#39;: 14, &#39;words&#39;: 15, &#39;&lt;unk&gt;&#39;: 16, &#39;&lt;eos&gt;&#39;: 17})</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Easy indexing (of batches)</strong></p>
+<blockquote>
+<div><p>Index multiple sentences at once in a single function call!</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>   <span class="o">&gt;&gt;&gt;</span> <span class="n">t2i</span><span class="o">.</span><span class="n">index</span><span class="p">([</span><span class="s2">&quot;the green horse raced &lt;eos&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;ideas are a dream &lt;eos&gt;&quot;</span><span class="p">])</span>
+   <span class="p">[[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">]]</span>
+
+<span class="n">where</span> <span class="n">unknown</span> <span class="n">tokens</span> <span class="n">are</span> <span class="n">always</span> <span class="n">mapped</span> <span class="n">to</span> <span class="sb">``</span><span class="n">unk_token</span><span class="sb">``</span><span class="o">.</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Easy conversion back to strings</strong></p>
+<blockquote>
+<div><p>Reverting indices back to strings is equally as easy:</p>
+</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span><span class="o">.</span><span class="n">unindex</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+<span class="go">&#39;the new &lt;unk&gt; dream horse&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Vocab from file</strong></p>
+<blockquote>
+<div><p>Using <code class="docutils literal notranslate"><span class="pre">T2I.from_file()</span></code>, the index can be created directly by reading from an existing vocab file.
+Refer to its documentation <a class="reference external" href="https://token2index.readthedocs.io/en/latest/#t2i.T2I.from_file">here</a> for more info.</p>
 </div></blockquote>
 </li>
-<li><p>Easy conversion back to strings</p>
+<li><p><strong>Fixed memory size</strong></p>
 <blockquote>
-<div><p>&#64;TODO</p>
+<div><p>Although the <code class="docutils literal notranslate"><span class="pre">defaultdict</span></code> class from Python’s <code class="docutils literal notranslate"><span class="pre">collections</span></code> package also posses the functionality to map unknown
+keys to a certain value, it grows in size for every new key. <code class="docutils literal notranslate"><span class="pre">T2I</span></code> memory size stays fixed after the index is built.</p>
 </div></blockquote>
 </li>
-<li><p>Building and extending vocab</p>
+<li><p><strong>Support for special tokens</strong></p>
 <blockquote>
-<div><p>&#64;TODO Example</p>
+<div><p>To enable flexibility in modern NLP applications, <code class="docutils literal notranslate"><span class="pre">T2I</span></code> allows for an arbitrary number of special tokens (like a
+masking or a padding token) during init!</p>
 </div></blockquote>
-</li>
-<li><p>Vocab from file</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p>Compatibility with major frameworks!</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
-</li>
-<li><p>Fixed memory size</p>
-<blockquote>
-<div><p>&#64;TODO Example</p>
-</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span> <span class="o">=</span> <span class="n">T2I</span><span class="p">(</span><span class="n">special_tokens</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&lt;mask&gt;&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span>
+<span class="go">T2I(Size: 3, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, {&#39;&lt;unk&gt;&#39;: 0, &#39;&lt;eos&gt;&#39;: 1, &#39;&lt;mask&gt;&#39;: 2})</span>
+</pre></div>
+</div>
 </li>
 </ul>
 </div>
 <div class="section" id="electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow">
-<h2>🔌 Compatibility with other frameworks (NumPy, PyTorch, Tensorflow)<a class="headerlink" href="#electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow" title="Permalink to this headline">¶</a></h2>
-<p>&#64;TODO NumPy example</p>
-<p>&#64;TODO PyTorch</p>
-<p>&#64;TODO Tensorfow</p>
+<h2>🔌 Compatibility with other frameworks (Numpy, PyTorch, Tensorflow)<a class="headerlink" href="#electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow" title="Permalink to this headline">¶</a></h2>
+<p>It is also ensured that <code class="docutils literal notranslate"><span class="pre">T2I</span></code> is easily compatible with frameworks like Numpy, PyTorch and
+Tensorflow, without needing them as requirements:</p>
+<p><strong>Numpy</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>```python
+&gt;&gt;&gt; import numpy as np
+&gt;&gt;&gt; t = np.array(t2i.index([&quot;the new words are ideas &lt;eos&gt;&quot;, &quot;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&quot;]))
+&gt;&gt;&gt; t
+array([[ 5, 15, 16, 17,  2, 18],
+   [ 5,  1,  6, 18, 19, 19]])
+&gt;&gt;&gt; t2i.unindex(t)
+[&#39;the new words &lt;unk&gt; ideas &lt;eos&gt;&#39;, &#39;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&#39;]
+```
+</pre></div>
+</div>
+<p><strong>PyTorch</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>```python
+&gt;&gt;&gt; import torch
+&gt;&gt;&gt; t = torch.LongTensor(t2i.index([&quot;the new words are ideas &lt;eos&gt;&quot;, &quot;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&quot;]))
+&gt;&gt;&gt; t
+tensor([[ 5, 15, 16, 17,  2, 18],
+    [ 5,  1,  6, 18, 19, 19]])
+&gt;&gt;&gt; t2i.unindex(t)
+[&#39;the new words &lt;unk&gt; ideas &lt;eos&gt;&#39;, &#39;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&#39;]
+```
+</pre></div>
+</div>
+<p><strong>Tensorflow</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>```python
+&gt;&gt;&gt; import tensorflow as tf
+&gt;&gt;&gt; t = tf.convert_to_tensor(t2i.index([&quot;the new words are ideas &lt;eos&gt;&quot;, &quot;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&quot;]), dtype=tf.int32)
+&gt;&gt;&gt; t
+tensor([[ 5, 15, 16, 17,  2, 18],
+    [ 5,  1,  6, 18, 19, 19]])
+&gt;&gt;&gt; t2i.unindex(t)
+[&#39;the new words &lt;unk&gt; ideas &lt;eos&gt;&#39;, &#39;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&#39;]
+```
+</pre></div>
+</div>
 </div>
 <div class="section" id="inbox-tray-installation">
 <h2>📥 Installation<a class="headerlink" href="#inbox-tray-installation" title="Permalink to this headline">¶</a></h2>
-<p>&#64;TODO</p>
+<p>Installation can simply be done using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">token2index</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="mortar-board-citing">
 <h2>🎓 Citing<a class="headerlink" href="#mortar-board-citing" title="Permalink to this headline">¶</a></h2>
@@ -206,6 +277,13 @@ value. In this case, after every lookup of a new token, this value for an unknow
 <dt id="t2i.Index.highest_idx">
 <em class="property">property </em><code class="sig-name descname">highest_idx</code><a class="headerlink" href="#t2i.Index.highest_idx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the currently highest index in the index. Return -1 if the index is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="t2i.Index.items">
+<code class="sig-name descname">items</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Iterable<span class="p">[</span>Tuple<span class="p">[</span>str<span class="p">, </span>int<span class="p">]</span><span class="p">]</span><a class="headerlink" href="#t2i.Index.items" title="Permalink to this definition">¶</a></dt>
+<dd><p>The same as a usual dict items(), except that the entries are sorted by index (this has otherwise proven to
+create problems in Python &lt; 3.6).</p>
 </dd></dl>
 
 </dd></dl>
