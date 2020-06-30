@@ -1,5 +1,6 @@
 """
-Module with function decorators, enabling
+Module with function decorators, enabling the processing of items or iterables of items in the same function.
+Likewise, it also enables compatibility with Numpy, Pytorch and Tensorflow.
 """
 
 # STD
@@ -8,8 +9,8 @@ from functools import wraps
 from typing import Callable
 
 # CONST
-# This defaultdict is used to apply conversions to data types defined in other frameworks (torch.LongTensor /
-# tf. ). This is done by mapping the type of the sequence to a function converting the sequence into an easier type.
+# This defaultdict is used to apply conversions to data types defined in other frameworks (torch.Tensor /
+# tf.Tensor). This is done by mapping the type of the sequence to a function converting it into an easier type.
 # Thus, in the normal case, a sequence based on a Python Iterable is just kept as is.
 CONVERSIONS = defaultdict(lambda: lambda seq: seq)
 
