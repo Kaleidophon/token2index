@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="token2index",  # Replace with your own username
-    version="0.9.1",
+    version="0.9.2",
     author="Dennis Ulmer",
     description="A lightweight but powerful library for token indexing.",
     long_description=long_description,
@@ -15,9 +15,9 @@ setup(
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GPL-3.0",
         "Operating System :: OS Independent",
     ],
+    license="GPL",
     python_requires=">=3.5.3",
     keywords=[
         "indexing",

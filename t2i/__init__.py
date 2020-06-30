@@ -26,12 +26,7 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
 __version__ = "0.9.2"
-
-# TODO
-# - Github / Zenodo citation
-# (https://academia.stackexchange.com/questions/106917/google-scholar-citation-for-github-repository)
-# - Write README
-# - Release on PIP
+__author__ = "Dennis Ulmer"
 
 
 class Index(dict):
