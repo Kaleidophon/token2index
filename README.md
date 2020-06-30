@@ -9,7 +9,7 @@
 
 ``token2index`` is a small yet powerful library facilitating the fast and easy creation of a data structure mapping 
 tokens to indices, primarily aimed at applications for Natural Language Processing. The library is fully tested, and 
-does not require any additional requirements. The documentation can be found [here](token2index.readthedocs.io), some feature highlights are 
+does not require any additional requirements. The documentation can be found [here](https://token2index.readthedocs.io/en/latest/), some feature highlights are 
 shown below.
 
 ### :sparkles: Feature Highlights
