@@ -12,6 +12,13 @@ tokens to indices, primarily aimed at applications for Natural Language Processi
 does not require any additional requirements. The documentation can be found [here](https://token2index.readthedocs.io/en/latest/), some feature highlights are 
 shown below.
 
+**Who / what is this for?**
+
+This class is written to be used for NLP applications where we want to assign an index to every word in a sequence e.g. to be later used to look up corresponding 
+word embeddings. Building an index and indexing batches of sequences for Deep Learning models using frameworks like PyTorch or Tensorflow are common steps but are often written from 
+scratch every time. This package provides a ready-made package combining many useful features, like reading vocabulary files, building indices from a corpus or indexing entire batches in one single
+function call, all while being fully tested.
+
 ### :sparkles: Feature Highlights
 
 * **Building and extending vocab**

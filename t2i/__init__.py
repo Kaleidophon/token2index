@@ -379,7 +379,7 @@ class T2I:
         indexed_corpus: IndexedCorpus
             Indexed corpus.
         """
-        indexed_corpus = self.__call__(corpus, delimiter=delimiter)
+        indexed_corpus = self(corpus, delimiter=delimiter)
 
         return indexed_corpus
 
