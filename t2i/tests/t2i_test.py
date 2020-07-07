@@ -19,6 +19,8 @@ class InitTests(unittest.TestCase):
     Test some behaviors when a T2I object is initialized.
     """
 
+    # TODO: Add test specifying special tokens twice
+
     def setUp(self):
         num_tokens = 30
         self.tokens = [random_str(random.randint(3, 8)) for _ in range(num_tokens)]
@@ -39,13 +41,14 @@ class InitTests(unittest.TestCase):
         """
         # Init an empty T2I object
         empty_t2i = T2I()
-        self.assertEqual(2, len(empty_t2i))
+        self.assertEqual(3, len(empty_t2i))
         self.assertEqual(Index, type(empty_t2i._index))
 
         # Init a T2I object with unk and eos token
         t2i = T2I({"<eos>": 10, "<unk>": 14})
         self.assertEqual(t2i["<unk>"], 0)
         self.assertEqual(t2i["<eos>"], 1)
+        self.assertEqual(t2i["<pad>"], 2)
 
     def test_max_size(self):
         """
@@ -172,8 +175,8 @@ class IndexingTests(unittest.TestCase):
         self.test_corpus5 = "This is a #UNK# sentence #EOS#"
         self.test_corpus5b = "This is a goggledigook sentence #EOS#"
         self.test_corpus5c = "This is a #MASK# sentence #FLASK#"
-        self.indexed_test_corpus5c = [0, 1, 2, 7, 4, 8]
-        self.indexed_test_corpus5c2 = [0, 1, 2, 13, 4, 14]
+        self.indexed_test_corpus5c = [0, 1, 2, 8, 4, 9]
+        self.indexed_test_corpus5c2 = [0, 1, 2, 15, 4, 16]
 
     def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "):
         """
@@ -204,7 +207,7 @@ class IndexingTests(unittest.TestCase):
             self.assertEqual(token, t2i.i2t[t2i[token]])
 
         test_sentence = "This is a new sentence"
-        indexed_test_sentence = [0, 1, 2, 9, 4]
+        indexed_test_sentence = [0, 1, 2, 10, 4]
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
 
@@ -243,7 +246,13 @@ class IndexingTests(unittest.TestCase):
         """
         Test indexing with custom eos / unk token.
         """
-        t2i = T2I.build(self.test_corpus3, unk_token="#UNK#", eos_token="#EOS#", special_tokens=("#MASK#", "#FLASK#"))
+        t2i = T2I.build(
+            self.test_corpus3,
+            unk_token="#UNK#",
+            eos_token="#EOS#",
+            pad_token="#PAD#",
+            special_tokens=("#MASK#", "#FLASK#"),
+        )
 
         self.assertEqual(t2i.index(self.test_corpus5), self.indexed_test_corpus45)
         self.assertEqual(t2i.index(self.test_corpus5b), self.indexed_test_corpus45)
@@ -251,8 +260,8 @@ class IndexingTests(unittest.TestCase):
         self.assertIn("#MASK#", t2i)
         self.assertIn("#FLASK#", t2i)
         string_repr = str(t2i)
-        self.assertIn("#MASK", string_repr)
-        self.assertIn("#FLASK", string_repr)
+        self.assertIn("#MASK#", string_repr)
+        self.assertIn("#FLASK#", string_repr)
         self.assertEqual(t2i.index(self.test_corpus5c), self.indexed_test_corpus5c)
 
         # Make sure special tokens are still there after extend()
@@ -260,8 +269,8 @@ class IndexingTests(unittest.TestCase):
         self.assertIn("#MASK#", extended_t2i)
         self.assertIn("#FLASK#", extended_t2i)
         extended_string_repr = str(extended_t2i)
-        self.assertIn("#MASK", extended_string_repr)
-        self.assertIn("#FLASK", extended_string_repr)
+        self.assertIn("#MASK#", extended_string_repr)
+        self.assertIn("#FLASK#", extended_string_repr)
         self.assertEqual(extended_t2i.index(self.test_corpus5c), self.indexed_test_corpus5c2)
 
     def test_torchtext_compatibility(self):
@@ -327,7 +336,7 @@ class MiscellaneousTests(unittest.TestCase):
         t2i = T2I.build(self.test_corpus1)
 
         contents = set([(k, v) for k, v in t2i])
-        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6)}
+        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6), ("<pad>", 7)}
         self.assertEqual(expected_contents, contents)
 
 
@@ -679,7 +688,7 @@ class FrameworkCompatibilityTests(unittest.TestCase):
             "the test is a barn . <eos> <pad> <pad>",
         ]
 
-        self.t2i = T2I.build(corpus, special_tokens=("<pad>",))
+        self.t2i = T2I.build(corpus)
 
     def test_numpy_compatibility(self):
         """

@@ -17,6 +17,7 @@ from t2i.decorators import indexing_consistency, unindexing_consistency
 # Define the standard unk and eos token here
 STD_UNK = "<unk>"
 STD_EOS = "<eos>"
+STD_PAD = "<pad>"
 
 # Custom types
 Corpus = Union[str, Iterable[str]]
@@ -24,9 +25,15 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
-__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
+__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK", "STD_PAD"]
 __version__ = "0.9.2"
 __author__ = "Dennis Ulmer"
+
+
+# TODO:
+# - Add automatic padding
+# - Add corresponding tests
+# - Rebuild and update docs / version
 
 
 class Index(dict):
@@ -85,6 +92,7 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
+        pad_token: str = STD_PAD,
         special_tokens: Tuple[str, ...] = tuple(),
     ) -> None:
         """
@@ -101,9 +109,11 @@ class T2I:
         min_freq: int
             Minimum frequency of a token for it to be included in the index. Default is 1.
         unk_token: str
-            Token for unknown words not contained in t2i. Default is 'STD_UNK'.
+            Token for unknown words not contained in t2i. Default is '<unk>'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
+        pad_token: str
+            Padding token. Default is '<pad>'.
         special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens.
         """
@@ -121,7 +131,12 @@ class T2I:
 
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
-        all_special_tokens = [unk_token, eos_token] + list(special_tokens)
+        all_special_tokens = [unk_token, eos_token, pad_token] + list(special_tokens)
+
+        assert len(all_special_tokens) == len(set(all_special_tokens)), (
+            "Unknown, end-of-sequence and padding token must not be specified via 'special_tokens', use corresponding "
+            "key-word arguments ('unk_token', 'eos_token', 'pad_token') instead."
+        )
 
         # Make sure that special tokens always come first by deleting them first if they already occur in index
         for special_token in all_special_tokens:
@@ -148,6 +163,7 @@ class T2I:
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
+        self.pad_token = pad_token
         self._build_i2t()
 
         # torchtext vocab compatibility
@@ -182,6 +198,7 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
+        pad_token: str = STD_PAD,
         special_tokens: Tuple[str, ...] = tuple(),
     ):
         """
@@ -203,6 +220,8 @@ class T2I:
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
+        pad_token: str
+            Padding token. Default is '<pad>'.
         special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens, given as unnamed arguments.
 
@@ -216,7 +235,7 @@ class T2I:
 
         t2i = T2I._create_index(corpus, delimiter)
 
-        return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
+        return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
     @staticmethod
     def from_file(
@@ -228,6 +247,7 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
+        pad_token: str = STD_PAD,
         special_tokens: Tuple[str, ...] = tuple(),
     ):
         """
@@ -254,6 +274,8 @@ class T2I:
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
+        pad_token: str
+            Padding token. Default is '<pad>'.
         special_tokens: Tuple[str, ...]
             An arbitrary number of additional special tokens.
 
@@ -307,7 +329,7 @@ class T2I:
             else:
                 raise ValueError("Vocab file has an unrecognized format.")
 
-        return T2I(index, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
+        return T2I(index, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
@@ -327,7 +349,13 @@ class T2I:
         """
         raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self._index))
 
-        t2i = T2I(raw_t2i, unk_token=self.unk_token, eos_token=self.eos_token, special_tokens=self.special_tokens)
+        t2i = T2I(
+            raw_t2i,
+            unk_token=self.unk_token,
+            eos_token=self.eos_token,
+            pad_token=self.pad_token,
+            special_tokens=self.special_tokens,
+        )
 
         return t2i
 
