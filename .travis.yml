@@ -21,6 +21,6 @@ install:
   - pip install numpy
 
 script:
-  - coverage run --source=t2i -m unittest discover -v t2i "t2i_test.py"
+  - coverage run --include=t2i/__init__.py -m unittest discover -v t2i "t2i_test.py"
   - coverage report --skip-covered
   - coveralls
