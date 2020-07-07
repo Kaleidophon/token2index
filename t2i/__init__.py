@@ -183,6 +183,7 @@ class T2I:
         """
         return self._index
 
+    @indexing_consistency
     @staticmethod
     def build(
         corpus: Corpus,
@@ -325,6 +326,7 @@ class T2I:
 
         return T2I(index, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
+    @indexing_consistency
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
         Extend an existing T2I with tokens from a new tokens and build indices for them.

@@ -29,14 +29,14 @@ function call, all while being fully tested.
     >>> from t2i import T2I
     >>> t2i = T2I.build(["colorless green ideas dream furiously", "the horse raced past the barn fell"])
     >>> t2i
-    T2I(Size: 13, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'parn': 9, 'fell': 10, '<unk>': 11, '<eos>': 12})
+    T2I(Size: 13, unk_token: <unk>, eos_token: <eos>, pad_token: <pad>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'parn': 9, 'fell': 10, '<unk>': 11, '<eos>': 12, '<pad>': 13})
     ```
   
     The index can always be extended again later using `extend()`:
     
     ```python
     >>> t2i = t2i.extend("completely new words")
-    T2I(Size: 16, unk_token: <unk>, eos_token: <eos>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'barn': 9, 'fell': 10, 'completely': 13, 'new': 14, 'words': 15, '<unk>': 16, '<eos>': 17})
+    T2I(Size: 16, unk_token: <unk>, eos_token: <eos>, pad_token: <pad>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'barn': 9, 'fell': 10, 'completely': 13, 'new': 14, 'words': 15, '<unk>': 16, '<eos>': 17, '<pad>': 18})
     ```
 
 * **Easy indexing (of batches)**
@@ -57,6 +57,29 @@ function call, all while being fully tested.
     ```python
     >>> t2i.unindex([5, 14, 16, 3, 6])
     'the new <unk> dream horse'
+    ```
+
+* **Automatic padding**
+
+    You are indexing multiple sentences of different length and want to add padding? No problem! `index()` has two
+    options available via the `pad_to` argument. The first is padding to the maximum length of all the sentences:
+    
+    ```python
+    >>> padded_sents = t2i.index(["the green horse raced <eos>", "ideas <eos>"], pad_to="max")
+    >>> padded_sents
+    [[5, 1, 6, 7, 12], [2, 12, 13, 13, 13]]
+    >>> t2i.unindex(padded_sents)
+    [['the green horse raced <eos>', 'ideas <eos> <pad> <pad> <pad>']]
+    ```
+  
+    Alternatively, you can also pad to a pre-defined length:
+    
+    ```python
+    >>> padded_sents = t2i.index(["the green horse <eos>", "past ideas <eos>"], pad_to=5)
+    >>> padded_sents
+    [[5, 1, 6, 12, 13], [8, 2, 12, 13, 13]]
+    >>> t2i.unindex(padded_sents)
+    [['the green horse <eos> <pad>', 'past ideas <eos> <pad> <pad>']]
     ```
     
 * **Vocab from file**
@@ -79,6 +102,12 @@ function call, all while being fully tested.
     >>> t2i
     T2I(Size: 3, unk_token: <unk>, eos_token: <eos>, {'<unk>': 0, '<eos>': 1, '<mask>': 2})
     ```
+
+* **Explicitly supported programmer laziness**
+
+    Too lazy to type? The library saves you a few keystrokes here and there. instead of calling `t2i.index(...)` you can
+    directly call `t2i(...)` to index one or multiple sequences. Furthermore, key functions like `index()`, `unindex()`,
+    `build()` and `extend()` support strings or iterables of strings as arguments alike.
 
 ### :electric_plug: Compatibility with other frameworks (Numpy, PyTorch, Tensorflow)
 
