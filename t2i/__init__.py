@@ -545,6 +545,6 @@ class T2I:
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
-        return "T2I(Size: {}, unk_token: {}, eos_token: {}, {})".format(
-            len(self.t2i), self.unk_token, self.eos_token, self._index.__repr__()
+        return "T2I(Size: {}, unk_token: {}, eos_token: {}, pad_token: {}, {})".format(
+            len(self.t2i), self.unk_token, self.eos_token, self.pad_token, self._index.__repr__()
         )

@@ -377,12 +377,13 @@ class MiscellaneousTests(unittest.TestCase):
         """
         Test whether the string representation works correctly.
         """
-        t2i = T2I.build(self.test_corpus1, unk_token=">UNK<", eos_token=">EOS<")
+        t2i = T2I.build(self.test_corpus1, unk_token=">UNK<", eos_token=">EOS<", pad_token=">PAD<")
         str_representation = str(t2i)
 
         self.assertIn(str(len(t2i)), str_representation)
         self.assertIn(">UNK<", str_representation)
         self.assertIn(">EOS<", str_representation)
+        self.assertIn(">PAD<", str_representation)
 
     def test_immutability(self):
         """
