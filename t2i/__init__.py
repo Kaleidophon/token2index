@@ -17,6 +17,7 @@ from t2i.decorators import indexing_consistency, unindexing_consistency
 # Define the standard unk and eos token here
 STD_UNK = "<unk>"
 STD_EOS = "<eos>"
+STD_PAD = "<pad>"
 
 # Custom types
 Corpus = Union[str, Iterable[str]]
@@ -24,8 +25,8 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
-__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK"]
-__version__ = "0.9.2"
+__all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK", "STD_PAD"]
+__version__ = "1.0.0"
 __author__ = "Dennis Ulmer"
 
 
@@ -85,7 +86,8 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
-        special_tokens: Tuple[str, ...] = tuple(),
+        pad_token: str = STD_PAD,
+        special_tokens: Iterable[str] = tuple(),
     ) -> None:
         """
         Initialize the T2I class.
@@ -101,10 +103,12 @@ class T2I:
         min_freq: int
             Minimum frequency of a token for it to be included in the index. Default is 1.
         unk_token: str
-            Token for unknown words not contained in t2i. Default is 'STD_UNK'.
+            Token for unknown words not contained in t2i. Default is '<unk>'.
         eos_token: str
             End-of-sequence token. Default is '<eos>'.
-        special_tokens: Tuple[str, ...]
+        pad_token: str
+            Padding token. Default is '<pad>'.
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens.
         """
         assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
@@ -121,7 +125,12 @@ class T2I:
 
         assert len(set(index.values())) == len(index.values()), "Index must only contain unique keys."
 
-        all_special_tokens = [unk_token, eos_token] + list(special_tokens)
+        all_special_tokens = [unk_token, eos_token, pad_token] + list(special_tokens)
+
+        assert len(all_special_tokens) == len(set(all_special_tokens)), (
+            "Unknown, end-of-sequence and padding token must not be specified via 'special_tokens', use corresponding "
+            "key-word arguments ('unk_token', 'eos_token', 'pad_token') instead."
+        )
 
         # Make sure that special tokens always come first by deleting them first if they already occur in index
         for special_token in all_special_tokens:
@@ -148,6 +157,7 @@ class T2I:
         self.unk_idx = index[unk_token]
         self.unk_token = unk_token
         self.eos_token = eos_token
+        self.pad_token = pad_token
         self._build_i2t()
 
         # torchtext vocab compatibility
@@ -182,7 +192,8 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
-        special_tokens: Tuple[str, ...] = tuple(),
+        pad_token: str = STD_PAD,
+        special_tokens: Iterable[str] = tuple(),
     ):
         """
         Build token index from scratch on a corpus.
@@ -203,7 +214,9 @@ class T2I:
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
-        special_tokens: Tuple[str, ...]
+        pad_token: str
+            Padding token. Default is '<pad>'.
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens, given as unnamed arguments.
 
         Returns
@@ -216,7 +229,7 @@ class T2I:
 
         t2i = T2I._create_index(corpus, delimiter)
 
-        return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
+        return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
     @staticmethod
     def from_file(
@@ -228,7 +241,8 @@ class T2I:
         min_freq: int = 1,
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
-        special_tokens: Tuple[str, ...] = tuple(),
+        pad_token: str = STD_PAD,
+        special_tokens: Iterable[str] = tuple(),
     ):
         """
         Generate a T2I object from a file. This file can have two possible formats:
@@ -254,7 +268,9 @@ class T2I:
             Token that should be used for unknown words. Default is 'STD_UNK'.
         eos_token: str
             Token that marks the end of a sequence. Default is '<eos>'.
-        special_tokens: Tuple[str, ...]
+        pad_token: str
+            Padding token. Default is '<pad>'.
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens.
 
         Returns
@@ -307,7 +323,7 @@ class T2I:
             else:
                 raise ValueError("Vocab file has an unrecognized format.")
 
-        return T2I(index, counter, max_size, min_freq, unk_token, eos_token, special_tokens)
+        return T2I(index, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
@@ -327,7 +343,13 @@ class T2I:
         """
         raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self._index))
 
-        t2i = T2I(raw_t2i, unk_token=self.unk_token, eos_token=self.eos_token, special_tokens=self.special_tokens)
+        t2i = T2I(
+            raw_t2i,
+            unk_token=self.unk_token,
+            eos_token=self.eos_token,
+            pad_token=self.pad_token,
+            special_tokens=self.special_tokens,
+        )
 
         return t2i
 
@@ -363,7 +385,7 @@ class T2I:
         return index
 
     @indexing_consistency
-    def index(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
+    def index(self, corpus: Corpus, delimiter: str = " ", pad_to: Optional[Union[str, int]] = None) -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
@@ -373,13 +395,16 @@ class T2I:
             Corpus that is being indexed.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
+        pad_to: Optional[Union[str, int]]
+            Indicate whether shorter sequences in this corpus should be padded up to the length of the longest sequence
+            ('max') or to a fixed length (any positive integer) or not not at all (None). Default is None.
 
         Returns
         -------
         indexed_corpus: IndexedCorpus
             Indexed corpus.
         """
-        indexed_corpus = self(corpus, delimiter=delimiter)
+        indexed_corpus = self(corpus, delimiter=delimiter, pad_to=pad_to)
 
         return indexed_corpus
 
@@ -415,7 +440,7 @@ class T2I:
         return corpus
 
     @indexing_consistency
-    def __call__(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
+    def __call__(self, corpus: Corpus, delimiter: str = " ", pad_to: Optional[Union[str, int]] = None) -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
@@ -425,6 +450,9 @@ class T2I:
             Corpus that is being indexed.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
+        pad_to: Optional[Union[str, int]]
+            Indicate whether shorter sequences in this corpus should be padded up to the length of the longest sequence
+            ('max') or to a fixed length (any positive integer) or not not at all (None). Default is None.
 
         Returns
         -------
@@ -433,8 +461,40 @@ class T2I:
         """
         indexed_corpus = []
 
+        # Resolve pad_up_to
+        if type(pad_to) == str:
+            assert pad_to == "max", "'pad_up_to' can only used with strings when 'max', '{}' found.".format(pad_to)
+            max_seq_len = max(len(seq.strip().split(delimiter)) for seq in corpus)
+
+        elif type(pad_to) == int:
+            assert pad_to > 0, "Length sequences are being padded to has to be greater than 0, {} specified".format(
+                pad_to
+            )
+
+            max_seq_len = pad_to
+
+        elif pad_to is None:
+            max_seq_len = -1
+
+        else:
+            raise TypeError("'pad_up_to' has to be 'max', a positive int or None, {} found.".format(pad_to))
+
+        # Index
         for sentence in corpus:
-            indexed_corpus.append(list(map(self.__getitem__, sentence.strip().split(delimiter))))
+
+            split_sentence = sentence.strip().split(delimiter)
+
+            if len(split_sentence) < max_seq_len:
+                split_sentence += [self.pad_token] * (max_seq_len - len(split_sentence))
+
+            elif len(split_sentence) > max_seq_len > 0:
+                warnings.warn(
+                    "Sentence '{}' is longer than specified padding length (specified {}, found {}).".format(
+                        sentence, len(split_sentence), max_seq_len
+                    )
+                )
+
+            indexed_corpus.append(list(map(self.__getitem__, split_sentence)))
 
         return indexed_corpus
 
@@ -485,6 +545,6 @@ class T2I:
 
     def __repr__(self) -> str:
         """ Return a string representation of a T2I object. """
-        return "T2I(Size: {}, unk_token: {}, eos_token: {}, {})".format(
-            len(self.t2i), self.unk_token, self.eos_token, self._index.__repr__()
+        return "T2I(Size: {}, unk_token: {}, eos_token: {}, pad_token: {}, {})".format(
+            len(self.t2i), self.unk_token, self.eos_token, self.pad_token, self._index.__repr__()
         )

@@ -9,9 +9,10 @@ import random
 import string
 import sys
 import unittest
+import warnings
 
 # PROJECT
-from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
+from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK, STD_PAD
 
 
 class InitTests(unittest.TestCase):
@@ -39,13 +40,43 @@ class InitTests(unittest.TestCase):
         """
         # Init an empty T2I object
         empty_t2i = T2I()
-        self.assertEqual(2, len(empty_t2i))
+        self.assertEqual(3, len(empty_t2i))
         self.assertEqual(Index, type(empty_t2i._index))
 
         # Init a T2I object with unk and eos token
         t2i = T2I({"<eos>": 10, "<unk>": 14})
         self.assertEqual(t2i["<unk>"], 0)
         self.assertEqual(t2i["<eos>"], 1)
+        self.assertEqual(t2i["<pad>"], 2)
+
+    def test_special_token_init(self):
+        """
+        Test init where unk, eos and pad token are erroneously also specified as special tokens.
+        """
+        for token in [STD_UNK, STD_EOS, STD_PAD]:
+            with self.assertRaises(AssertionError):
+                T2I(special_tokens=[token])
+
+            with self.assertRaises(AssertionError):
+                T2I.build(self.tokens, special_tokens=[token])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#UNK#", special_tokens=["#UNK#"])
+
+        with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#UNK#", special_tokens=["#UNK#"])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#PAD#", special_tokens=["#PAD#"])
+
+        with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#PAD#", special_tokens=["#PAD#"])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#EOS#", special_tokens=["#EOS#"])
+
+        with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#EOS#", special_tokens=["#EOS#"])
 
     def test_max_size(self):
         """
@@ -125,6 +156,11 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored during the normal T2I initialization when their frequency is too low.
         """
+        # Test whether warning is given when a counter is given but min_freq is still 1
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I(counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I(self.index, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -132,6 +168,10 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored when using build() when their frequency is too low.
         """
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I.build(self.corpus, counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I.build(self.corpus, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -139,6 +179,10 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored when building the T2I object from a vocab file.
         """
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I.from_file(self.vocab_path, counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I.from_file(self.vocab_path, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -172,8 +216,8 @@ class IndexingTests(unittest.TestCase):
         self.test_corpus5 = "This is a #UNK# sentence #EOS#"
         self.test_corpus5b = "This is a goggledigook sentence #EOS#"
         self.test_corpus5c = "This is a #MASK# sentence #FLASK#"
-        self.indexed_test_corpus5c = [0, 1, 2, 7, 4, 8]
-        self.indexed_test_corpus5c2 = [0, 1, 2, 13, 4, 14]
+        self.indexed_test_corpus5c = [0, 1, 2, 8, 4, 9]
+        self.indexed_test_corpus5c2 = [0, 1, 2, 15, 4, 16]
 
     def _assert_indexing_consistency(self, corpus: Corpus, t2i: T2I, joiner: str = " ", delimiter: str = " "):
         """
@@ -204,7 +248,7 @@ class IndexingTests(unittest.TestCase):
             self.assertEqual(token, t2i.i2t[t2i[token]])
 
         test_sentence = "This is a new sentence"
-        indexed_test_sentence = [0, 1, 2, 9, 4]
+        indexed_test_sentence = [0, 1, 2, 10, 4]
         self.assertEqual(t2i.index(test_sentence), indexed_test_sentence)
         self._assert_indexing_consistency(test_sentence, t2i)
 
@@ -243,7 +287,13 @@ class IndexingTests(unittest.TestCase):
         """
         Test indexing with custom eos / unk token.
         """
-        t2i = T2I.build(self.test_corpus3, unk_token="#UNK#", eos_token="#EOS#", special_tokens=("#MASK#", "#FLASK#"))
+        t2i = T2I.build(
+            self.test_corpus3,
+            unk_token="#UNK#",
+            eos_token="#EOS#",
+            pad_token="#PAD#",
+            special_tokens=("#MASK#", "#FLASK#"),
+        )
 
         self.assertEqual(t2i.index(self.test_corpus5), self.indexed_test_corpus45)
         self.assertEqual(t2i.index(self.test_corpus5b), self.indexed_test_corpus45)
@@ -251,8 +301,8 @@ class IndexingTests(unittest.TestCase):
         self.assertIn("#MASK#", t2i)
         self.assertIn("#FLASK#", t2i)
         string_repr = str(t2i)
-        self.assertIn("#MASK", string_repr)
-        self.assertIn("#FLASK", string_repr)
+        self.assertIn("#MASK#", string_repr)
+        self.assertIn("#FLASK#", string_repr)
         self.assertEqual(t2i.index(self.test_corpus5c), self.indexed_test_corpus5c)
 
         # Make sure special tokens are still there after extend()
@@ -260,9 +310,50 @@ class IndexingTests(unittest.TestCase):
         self.assertIn("#MASK#", extended_t2i)
         self.assertIn("#FLASK#", extended_t2i)
         extended_string_repr = str(extended_t2i)
-        self.assertIn("#MASK", extended_string_repr)
-        self.assertIn("#FLASK", extended_string_repr)
+        self.assertIn("#MASK#", extended_string_repr)
+        self.assertIn("#FLASK#", extended_string_repr)
         self.assertEqual(extended_t2i.index(self.test_corpus5c), self.indexed_test_corpus5c2)
+
+    def test_automatic_padding(self):
+        """
+        Test whether the automatic padding functionality works as expected.
+        """
+        t2i = T2I.build(self.test_corpus1)
+
+        # Now index corpus with sequences of uneven length
+        corpus = ["A A A", "D", "D A", "C B A B A B"]
+
+        # pad_to argument error cases
+        with self.assertRaises(AssertionError):
+            t2i(corpus, pad_to="min")
+
+        with self.assertRaises(AssertionError):
+            t2i(corpus, pad_to=0)
+
+        with self.assertRaises(TypeError):
+            t2i(corpus, pad_to=bool)
+
+        # Max padding
+        indexed_corpus = t2i(corpus, pad_to="max")
+        seq_lengths = [len(seq) for seq in indexed_corpus]
+
+        self.assertEqual(len(set(seq_lengths)), 1)
+        self.assertTrue(all([seq_len == 6 for seq_len in seq_lengths]))
+        self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus[:3]]))
+
+        # Specified padding
+        indexed_corpus2 = t2i(corpus, pad_to=10)
+        seq_lengths2 = [len(seq) for seq in indexed_corpus2]
+
+        self.assertEqual(len(set(seq_lengths2)), 1)
+        self.assertTrue(all([seq_len == 10 for seq_len in seq_lengths2]))
+        self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus2]))
+
+        # Test warning
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            t2i(corpus, pad_to=2)
+
+            self.assertEqual(len(caught_warnings), 2)
 
     def test_torchtext_compatibility(self):
         """
@@ -286,12 +377,13 @@ class MiscellaneousTests(unittest.TestCase):
         """
         Test whether the string representation works correctly.
         """
-        t2i = T2I.build(self.test_corpus1, unk_token=">UNK<", eos_token=">EOS<")
+        t2i = T2I.build(self.test_corpus1, unk_token=">UNK<", eos_token=">EOS<", pad_token=">PAD<")
         str_representation = str(t2i)
 
         self.assertIn(str(len(t2i)), str_representation)
         self.assertIn(">UNK<", str_representation)
         self.assertIn(">EOS<", str_representation)
+        self.assertIn(">PAD<", str_representation)
 
     def test_immutability(self):
         """
@@ -327,7 +419,7 @@ class MiscellaneousTests(unittest.TestCase):
         t2i = T2I.build(self.test_corpus1)
 
         contents = set([(k, v) for k, v in t2i])
-        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6)}
+        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6), ("<pad>", 7)}
         self.assertEqual(expected_contents, contents)
 
 
@@ -679,7 +771,7 @@ class FrameworkCompatibilityTests(unittest.TestCase):
             "the test is a barn . <eos> <pad> <pad>",
         ]
 
-        self.t2i = T2I.build(corpus, special_tokens=("<pad>",))
+        self.t2i = T2I.build(corpus)
 
     def test_numpy_compatibility(self):
         """
