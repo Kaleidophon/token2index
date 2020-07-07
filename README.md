@@ -100,7 +100,7 @@ function call, all while being fully tested.
     ```python
     >>> t2i = T2I(special_tokens=["<mask>"])
     >>> t2i
-    T2I(Size: 3, unk_token: <unk>, eos_token: <eos>, {'<unk>': 0, '<eos>': 1, '<mask>': 2})
+    T2I(Size: 3, unk_token: <unk>, eos_token: <eos>, pad_token: <pad>, {'<unk>': 0, '<eos>': 1, '<mask>': 2, '<pad>': 3})
     ```
 
 * **Explicitly supported programmer laziness**
