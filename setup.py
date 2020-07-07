@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="token2index",  # Replace with your own username
-    version="0.9.2",
+    version="1.0.0",
     author="Dennis Ulmer",
     description="A lightweight but powerful library for token indexing.",
     long_description=long_description,
@@ -33,6 +33,7 @@ setup(
         "i2t",
         "i2w",
         "deep learning",
+        "seq2seq",
     ],
     packages=find_packages(exclude=["docs", "dist"]),
 )

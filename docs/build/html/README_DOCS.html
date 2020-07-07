@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     
-    <title>|:zap:| |:card_index:| token2index: A lightweight but powerful library for token indexing &#8212; token2index 0.9.2 documentation</title>
+    <title>|:zap:| |:card_index:| token2index: A lightweight but powerful library for token indexing &#8212; token2index 1.0.0 documentation</title>
 
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -33,7 +33,7 @@
            <a class="navbar-brand py-1" href="index.html">
                   token2index
           </a>
-          <span class="navbar-text navbar-version pb-0 pt-1"><b>0.9.2</b></span>
+          <span class="navbar-text navbar-version pb-0 pt-1"><b>1.0.0</b></span>
           <ul class="navbar-nav mr-auto">
           
               <li class="nav-item dropdown d-none d-sm-block" id="navbar-pages">
@@ -76,7 +76,7 @@
 
     <div class="related d-flex justify-content-between bg-light flex-wrap" role="navigation" aria-label="related navigation">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="index.html">token2index 0.9.2 documentation</a></li>
+            <li class="breadcrumb-item"><a href="index.html">token2index 1.0.0 documentation</a></li>
             <li class="breadcrumb-item active">|:zap:| |:card_index:| token2index: A lightweight but powerful library for token indexing</li>
         </ol>
        <div>
@@ -132,12 +132,17 @@
 <a class="reference external" href="https://token2index.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/token2index/badge/?version=latest" /></a>
 <a class="reference external" href="https://coveralls.io/github/Kaleidophon/token2index?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/Kaleidophon/token2index/badge.svg?branch=master" /></a>
 <a class="reference external" href="#"><img alt="Compatibility" src="https://img.shields.io/badge/Python-3.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blue" /></a>
-<a class="reference external" href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
+<a class="reference external" href="https://www.gnu.org/licenses/gpl-3.0"><img alt="License: GPL v3" src="https://img.shields.io/badge/License-GPLv3-blue.svg" /></a>
 <a class="reference external" href="https://github.com/python/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg" /></a></p>
 <p><code class="docutils literal notranslate"><span class="pre">token2index</span></code> is a small yet powerful library facilitating the fast and easy creation of a data structure mapping
 tokens to indices, primarily aimed at applications for Natural Language Processing. The library is fully tested, and
-does not require any additional requirements. The documentation can be found <a class="reference external" href="token2index.readthedocs.io">here</a>, some feature highlights are
+does not require any additional requirements. The documentation can be found <a class="reference external" href="https://token2index.readthedocs.io/en/latest/">here</a>, some feature highlights are
 shown below.</p>
+<p><strong>Who / what is this for?</strong></p>
+<p>This class is written to be used for NLP applications where we want to assign an index to every word in a sequence e.g. to be later used to look up corresponding
+word embeddings. Building an index and indexing batches of sequences for Deep Learning models using frameworks like PyTorch or Tensorflow are common steps but are often written from
+scratch every time. This package provides a ready-made package combining many useful features, like reading vocabulary files, building indices from a corpus or indexing entire batches in one single
+function call, all while being fully tested.</p>
 <div class="section" id="sparkles-feature-highlights">
 <h2>|:sparkles:| Feature Highlights<a class="headerlink" href="#sparkles-feature-highlights" title="Permalink to this headline">¶</a></h2>
 <ul>
@@ -146,12 +151,12 @@ shown below.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">t2i</span> <span class="kn">import</span> <span class="n">T2I</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span> <span class="o">=</span> <span class="n">T2I</span><span class="o">.</span><span class="n">build</span><span class="p">([</span><span class="s2">&quot;colorless green ideas dream furiously&quot;</span><span class="p">,</span> <span class="s2">&quot;the horse raced past the barn fell&quot;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span>
-<span class="go">T2I(Size: 13, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, {&#39;colorless&#39;: 0, &#39;green&#39;: 1, &#39;ideas&#39;: 2, &#39;dream&#39;: 3, &#39;furiously&#39;: 4, &#39;the&#39;: 5, &#39;horse&#39;: 6, &#39;raced&#39;: 7, &#39;past&#39;: 8, &#39;parn&#39;: 9, &#39;fell&#39;: 10, &#39;&lt;unk&gt;&#39;: 11, &#39;&lt;eos&gt;&#39;: 12})</span>
+<span class="go">T2I(Size: 13, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, pad_token: &lt;pad&gt;, {&#39;colorless&#39;: 0, &#39;green&#39;: 1, &#39;ideas&#39;: 2, &#39;dream&#39;: 3, &#39;furiously&#39;: 4, &#39;the&#39;: 5, &#39;horse&#39;: 6, &#39;raced&#39;: 7, &#39;past&#39;: 8, &#39;parn&#39;: 9, &#39;fell&#39;: 10, &#39;&lt;unk&gt;&#39;: 11, &#39;&lt;eos&gt;&#39;: 12, &#39;&lt;pad&gt;&#39;: 13})</span>
 </pre></div>
 </div>
 <p>The index can always be extended again later using <code class="docutils literal notranslate"><span class="pre">extend()</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span> <span class="o">=</span> <span class="n">t2i</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="s2">&quot;completely new words&quot;</span><span class="p">)</span>
-<span class="go">T2I(Size: 16, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, {&#39;colorless&#39;: 0, &#39;green&#39;: 1, &#39;ideas&#39;: 2, &#39;dream&#39;: 3, &#39;furiously&#39;: 4, &#39;the&#39;: 5, &#39;horse&#39;: 6, &#39;raced&#39;: 7, &#39;past&#39;: 8, &#39;barn&#39;: 9, &#39;fell&#39;: 10, &#39;completely&#39;: 13, &#39;new&#39;: 14, &#39;words&#39;: 15, &#39;&lt;unk&gt;&#39;: 16, &#39;&lt;eos&gt;&#39;: 17})</span>
+<span class="go">T2I(Size: 16, unk_token: &lt;unk&gt;, eos_token: &lt;eos&gt;, pad_token: &lt;pad&gt;, {&#39;colorless&#39;: 0, &#39;green&#39;: 1, &#39;ideas&#39;: 2, &#39;dream&#39;: 3, &#39;furiously&#39;: 4, &#39;the&#39;: 5, &#39;horse&#39;: 6, &#39;raced&#39;: 7, &#39;past&#39;: 8, &#39;barn&#39;: 9, &#39;fell&#39;: 10, &#39;completely&#39;: 13, &#39;new&#39;: 14, &#39;words&#39;: 15, &#39;&lt;unk&gt;&#39;: 16, &#39;&lt;eos&gt;&#39;: 17, &#39;&lt;pad&gt;&#39;: 18})</span>
 </pre></div>
 </div>
 </li>
@@ -167,6 +172,25 @@ shown below.</p>
 <p>Reverting indices back to strings is equally as easy:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span><span class="o">.</span><span class="n">unindex</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
 <span class="go">&#39;the new &lt;unk&gt; dream horse&#39;</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Automatic padding</strong></p>
+<p>You are indexing multiple sentences of different length and want to add padding? No problem! <code class="docutils literal notranslate"><span class="pre">index()</span></code> has two
+options available via the <code class="docutils literal notranslate"><span class="pre">pad_to</span></code> argument. The first is padding to the maximum length of all the sentences:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">padded_sents</span> <span class="o">=</span> <span class="n">t2i</span><span class="o">.</span><span class="n">index</span><span class="p">([</span><span class="s2">&quot;the green horse raced &lt;eos&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;ideas &lt;eos&gt;&quot;</span><span class="p">],</span> <span class="n">pad_to</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">padded_sents</span>
+<span class="go">[[5, 1, 6, 7, 12], [2, 12, 13, 13, 13]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span><span class="o">.</span><span class="n">unindex</span><span class="p">(</span><span class="n">padded_sents</span><span class="p">)</span>
+<span class="go">[[&#39;the green horse raced &lt;eos&gt;&#39;, &#39;ideas &lt;eos&gt; &lt;pad&gt; &lt;pad&gt; &lt;pad&gt;&#39;]]</span>
+</pre></div>
+</div>
+<p>Alternatively, you can also pad to a pre-defined length:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">padded_sents</span> <span class="o">=</span> <span class="n">t2i</span><span class="o">.</span><span class="n">index</span><span class="p">([</span><span class="s2">&quot;the green horse &lt;eos&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;past ideas &lt;eos&gt;&quot;</span><span class="p">],</span> <span class="n">pad_to</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">padded_sents</span>
+<span class="go">[[5, 1, 6, 12, 13], [8, 2, 12, 13, 13]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2i</span><span class="o">.</span><span class="n">unindex</span><span class="p">(</span><span class="n">padded_sents</span><span class="p">)</span>
+<span class="go">[[&#39;the green horse &lt;eos&gt; &lt;pad&gt;&#39;, &#39;past ideas &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&#39;]]</span>
 </pre></div>
 </div>
 </li>
@@ -187,6 +211,11 @@ masking or a padding token) during init!</p>
 </pre></div>
 </div>
 </li>
+<li><p><strong>Explicitly supported programmer laziness</strong></p>
+<p>Too lazy to type? The library saves you a few keystrokes here and there. instead of calling <code class="docutils literal notranslate"><span class="pre">t2i.index(...)</span></code> you can
+directly call <code class="docutils literal notranslate"><span class="pre">t2i(...)</span></code> to index one or multiple sequences. Furthermore, key functions like <code class="docutils literal notranslate"><span class="pre">index()</span></code>, <code class="docutils literal notranslate"><span class="pre">unindex()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">build()</span></code> and <code class="docutils literal notranslate"><span class="pre">extend()</span></code> support strings or iterables of strings as arguments alike.</p>
+</li>
 </ul>
 </div>
 <div class="section" id="electric-plug-compatibility-with-other-frameworks-numpy-pytorch-tensorflow">
@@ -194,7 +223,7 @@ masking or a padding token) during init!</p>
 <p>It is also ensured that <code class="docutils literal notranslate"><span class="pre">T2I</span></code> is easily compatible with frameworks like Numpy, PyTorch and
 Tensorflow, without needing them as requirements:</p>
 <p><strong>Numpy</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t2i</span><span class="o">.</span><span class="n">index</span><span class="p">([</span><span class="s2">&quot;the new words are ideas &lt;eos&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&quot;</span><span class="p">]))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span>
 <span class="go">array([[ 5, 15, 16, 17,  2, 18],</span>
@@ -214,7 +243,7 @@ Tensorflow, without needing them as requirements:</p>
 </pre></div>
 </div>
 <p><strong>Tensorflow</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">t2i</span><span class="o">.</span><span class="n">index</span><span class="p">([</span><span class="s2">&quot;the new words are ideas &lt;eos&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;the green horse &lt;eos&gt; &lt;pad&gt; &lt;pad&gt;&quot;</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">t</span>
 <span class="go">tensor([[ 5, 15, 16, 17,  2, 18],</span>
@@ -234,10 +263,11 @@ Tensorflow, without needing them as requirements:</p>
 <div class="section" id="mortar-board-citing">
 <h2>|:mortar_board:| Citing<a class="headerlink" href="#mortar-board-citing" title="Permalink to this headline">¶</a></h2>
 <p>If you use <code class="docutils literal notranslate"><span class="pre">token2index</span></code> for research purposes, please cite the library using the following citation info:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@article</span><span class="p">{</span><span class="n">token2index</span><span class="p">,</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@misc</span><span class="p">{</span><span class="n">ulmer2020token2index</span><span class="p">,</span>
     <span class="n">title</span><span class="o">=</span><span class="p">{</span><span class="n">token2index</span><span class="p">:</span> <span class="n">A</span> <span class="n">lightweight</span> <span class="n">but</span> <span class="n">powerful</span> <span class="n">library</span> <span class="k">for</span> <span class="n">token</span> <span class="n">indexing</span><span class="p">},</span>
-    <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Dennis</span> <span class="n">Ulmer</span><span class="p">},</span>
-    <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2020</span><span class="p">},</span>
+    <span class="n">author</span><span class="o">=</span><span class="p">{</span><span class="n">Ulmer</span><span class="p">,</span> <span class="n">Dennis</span><span class="p">},</span>
+    <span class="n">journal</span><span class="o">=</span><span class="p">{</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">Kaleidophon</span><span class="o">/</span><span class="n">token2index</span><span class="p">},</span>
+    <span class="n">year</span><span class="o">=</span><span class="p">{</span><span class="mi">2020</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -255,7 +285,7 @@ Tensorflow, without needing them as requirements:</p>
 <footer class="footer d-flex justify-content-between flex-wrap">
     <div class="copyright">
         <div>&copy; Copyright 2020, Dennis Ulmer.</div>
-      <div>Generated by <a href="http://sphinx.pocoo.org/">Sphinx</a> 3.1.1 using <a href="https://github.com/myyasuda/sphinxbootstrap4theme">sphinxbootstrap4theme</a> 0.6.0.</div>
+      <div>Generated by <a href="http://sphinx.pocoo.org/">Sphinx</a> 3.1.2 using <a href="https://github.com/myyasuda/sphinxbootstrap4theme">sphinxbootstrap4theme</a> 0.6.0.</div>
     </div>
     <div>
         <a href="#" class="btn btn-primary btn-sm" role="botton">Back to top</a>

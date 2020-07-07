@@ -26,7 +26,7 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK", "STD_PAD"]
-__version__ = "0.9.2"
+__version__ = "1.0.0"
 __author__ = "Dennis Ulmer"
 
 
@@ -183,7 +183,6 @@ class T2I:
         """
         return self._index
 
-    @indexing_consistency
     @staticmethod
     def build(
         corpus: Corpus,
@@ -326,7 +325,6 @@ class T2I:
 
         return T2I(index, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
 
-    @indexing_consistency
     def extend(self, corpus: Corpus, delimiter: str = " "):
         """
         Extend an existing T2I with tokens from a new tokens and build indices for them.
