@@ -391,7 +391,7 @@ class T2I:
         return index
 
     @indexing_consistency
-    def index(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
+    def index(self, corpus: Corpus, delimiter: str = " ", pad_up_to: Optional[Union[str, int]] = None) -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
@@ -401,13 +401,16 @@ class T2I:
             Corpus that is being indexed.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
+        pad_up_to: Optional[Union[str, int]]
+            Indicate whether shorter sequences in this corpus should be padded up to the length of the longest sequence
+            ('max') or to a fixed length (any positive integer) or not not at all (None). Default is None.
 
         Returns
         -------
         indexed_corpus: IndexedCorpus
             Indexed corpus.
         """
-        indexed_corpus = self(corpus, delimiter=delimiter)
+        indexed_corpus = self(corpus, delimiter=delimiter, pad_up_to=pad_up_to)
 
         return indexed_corpus
 
@@ -443,7 +446,9 @@ class T2I:
         return corpus
 
     @indexing_consistency
-    def __call__(self, corpus: Corpus, delimiter: str = " ") -> IndexedCorpus:
+    def __call__(
+        self, corpus: Corpus, delimiter: str = " ", pad_up_to: Optional[Union[str, int]] = None
+    ) -> IndexedCorpus:
         """
         Assign indices to a sentence or a series of sentences.
 
@@ -453,6 +458,9 @@ class T2I:
             Corpus that is being indexed.
         delimiter: str
             Delimiter between tokens. Default is a whitespace ' '.
+        pad_up_to: Optional[Union[str, int]]
+            Indicate whether shorter sequences in this corpus should be padded up to the length of the longest sequence
+            ('max') or to a fixed length (any positive integer) or not not at all (None). Default is None.
 
         Returns
         -------
@@ -461,8 +469,42 @@ class T2I:
         """
         indexed_corpus = []
 
+        # Resolve pad_up_to
+        if type(pad_up_to) == str:
+            assert pad_up_to == "max", "'pad_up_to' can only used with strings when 'max', '{}' found.".format(
+                pad_up_to
+            )
+            max_seq_len = max(len(seq.strip().split(delimiter)) for seq in corpus)
+
+        elif type(pad_up_to) == int:
+            assert pad_up_to > 0, "Length sequences are being padded to has to be greater than 0, {} specified".format(
+                pad_up_to
+            )
+
+            max_seq_len = pad_up_to
+
+        elif pad_up_to is None:
+            max_seq_len = -1
+
+        else:
+            raise TypeError("'pad_up_to' has to be 'max', a positive int or None, {} found.".format(pad_up_to))
+
+        # Index
         for sentence in corpus:
-            indexed_corpus.append(list(map(self.__getitem__, sentence.strip().split(delimiter))))
+
+            split_sentence = sentence.strip().split(delimiter)
+
+            if len(split_sentence) < max_seq_len:
+                split_sentence += [self.pad_token] * (max_seq_len - len(split_sentence))
+
+            elif len(split_sentence) > max_seq_len > 0:
+                warnings.warn(
+                    "Sentence '{}' is longer than specified padding length (specified {}, found {}).".format(
+                        sentence, len(split_sentence), max_seq_len
+                    )
+                )
+
+            indexed_corpus.append(list(map(self.__getitem__, split_sentence)))
 
         return indexed_corpus
 

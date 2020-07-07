@@ -56,14 +56,26 @@ class InitTests(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 T2I(special_tokens=[token])
 
+            with self.assertRaises(AssertionError):
+                T2I.build(self.tokens, special_tokens=[token])
+
         with self.assertRaises(AssertionError):
             T2I(unk_token="#UNK#", special_tokens=["#UNK#"])
+
+        with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#UNK#", special_tokens=["#UNK#"])
 
         with self.assertRaises(AssertionError):
             T2I(unk_token="#PAD#", special_tokens=["#PAD#"])
 
         with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#PAD#", special_tokens=["#PAD#"])
+
+        with self.assertRaises(AssertionError):
             T2I(unk_token="#EOS#", special_tokens=["#EOS#"])
+
+        with self.assertRaises(AssertionError):
+            T2I.build(self.tokens, unk_token="#EOS#", special_tokens=["#EOS#"])
 
     def test_max_size(self):
         """
@@ -287,6 +299,41 @@ class IndexingTests(unittest.TestCase):
         self.assertIn("#MASK#", extended_string_repr)
         self.assertIn("#FLASK#", extended_string_repr)
         self.assertEqual(extended_t2i.index(self.test_corpus5c), self.indexed_test_corpus5c2)
+
+    def test_automatic_padding(self):
+        """
+        Test whether the automatic padding functionality works as expected.
+        """
+        t2i = T2I.build(self.test_corpus1)
+
+        # Now index corpus with sequences of uneven length
+        corpus = ["A A A", "D", "D A", "C B A B A B"]
+
+        # pad_up_to argument error cases
+        with self.assertRaises(AssertionError):
+            t2i(corpus, pad_up_to="min")
+
+        with self.assertRaises(AssertionError):
+            t2i(corpus, pad_up_to=0)
+
+        with self.assertRaises(TypeError):
+            t2i(corpus, pad_up_to=bool)
+
+        # Max padding
+        indexed_corpus = t2i(corpus, pad_up_to="max")
+        seq_lengths = [len(seq) for seq in indexed_corpus]
+
+        self.assertEqual(len(set(seq_lengths)), 1)
+        self.assertTrue(all([seq_len == 6 for seq_len in seq_lengths]))
+        self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus[:3]]))
+
+        # Specified padding
+        indexed_corpus2 = t2i(corpus, pad_up_to=10)
+        seq_lengths2 = [len(seq) for seq in indexed_corpus2]
+
+        self.assertEqual(len(set(seq_lengths2)), 1)
+        self.assertTrue(all([seq_len == 10 for seq_len in seq_lengths2]))
+        self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus2]))
 
     def test_torchtext_compatibility(self):
         """
