@@ -9,6 +9,7 @@ import random
 import string
 import sys
 import unittest
+import warnings
 
 # PROJECT
 from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK, STD_PAD
@@ -155,6 +156,11 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored during the normal T2I initialization when their frequency is too low.
         """
+        # Test whether warning is given when a counter is given but min_freq is still 1
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I(counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I(self.index, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -162,6 +168,10 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored when using build() when their frequency is too low.
         """
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I.build(self.corpus, counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I.build(self.corpus, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -169,6 +179,10 @@ class CountTests(unittest.TestCase):
         """
         Test whether tokens are ignored when building the T2I object from a vocab file.
         """
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            T2I.from_file(self.vocab_path, counter=self.counter)
+            self.assertEqual(len(caught_warnings), 1)
+
         t2i = T2I.from_file(self.vocab_path, counter=self.counter, min_freq=self.min_freq)
         self.assertTrue(self._check_freq_filtering(t2i, self.counter, self.min_freq))
 
@@ -309,18 +323,18 @@ class IndexingTests(unittest.TestCase):
         # Now index corpus with sequences of uneven length
         corpus = ["A A A", "D", "D A", "C B A B A B"]
 
-        # pad_up_to argument error cases
+        # pad_to argument error cases
         with self.assertRaises(AssertionError):
-            t2i(corpus, pad_up_to="min")
+            t2i(corpus, pad_to="min")
 
         with self.assertRaises(AssertionError):
-            t2i(corpus, pad_up_to=0)
+            t2i(corpus, pad_to=0)
 
         with self.assertRaises(TypeError):
-            t2i(corpus, pad_up_to=bool)
+            t2i(corpus, pad_to=bool)
 
         # Max padding
-        indexed_corpus = t2i(corpus, pad_up_to="max")
+        indexed_corpus = t2i(corpus, pad_to="max")
         seq_lengths = [len(seq) for seq in indexed_corpus]
 
         self.assertEqual(len(set(seq_lengths)), 1)
@@ -328,12 +342,18 @@ class IndexingTests(unittest.TestCase):
         self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus[:3]]))
 
         # Specified padding
-        indexed_corpus2 = t2i(corpus, pad_up_to=10)
+        indexed_corpus2 = t2i(corpus, pad_to=10)
         seq_lengths2 = [len(seq) for seq in indexed_corpus2]
 
         self.assertEqual(len(set(seq_lengths2)), 1)
         self.assertTrue(all([seq_len == 10 for seq_len in seq_lengths2]))
         self.assertTrue(all([t2i[t2i.pad_token] in seq for seq in indexed_corpus2]))
+
+        # Test warning
+        with warnings.catch_warnings(record=True) as caught_warnings:
+            t2i(corpus, pad_to=2)
+
+            self.assertEqual(len(caught_warnings), 2)
 
     def test_torchtext_compatibility(self):
         """
