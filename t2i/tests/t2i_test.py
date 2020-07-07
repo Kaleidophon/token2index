@@ -11,15 +11,13 @@ import sys
 import unittest
 
 # PROJECT
-from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK
+from t2i import T2I, Index, Corpus, STD_EOS, STD_UNK, STD_PAD
 
 
 class InitTests(unittest.TestCase):
     """
     Test some behaviors when a T2I object is initialized.
     """
-
-    # TODO: Add test specifying special tokens twice
 
     def setUp(self):
         num_tokens = 30
@@ -49,6 +47,23 @@ class InitTests(unittest.TestCase):
         self.assertEqual(t2i["<unk>"], 0)
         self.assertEqual(t2i["<eos>"], 1)
         self.assertEqual(t2i["<pad>"], 2)
+
+    def test_special_token_init(self):
+        """
+        Test init where unk, eos and pad token are erroneously also specified as special tokens.
+        """
+        for token in [STD_UNK, STD_EOS, STD_PAD]:
+            with self.assertRaises(AssertionError):
+                T2I(special_tokens=[token])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#UNK#", special_tokens=["#UNK#"])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#PAD#", special_tokens=["#PAD#"])
+
+        with self.assertRaises(AssertionError):
+            T2I(unk_token="#EOS#", special_tokens=["#EOS#"])
 
     def test_max_size(self):
         """

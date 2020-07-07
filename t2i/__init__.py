@@ -93,7 +93,7 @@ class T2I:
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         pad_token: str = STD_PAD,
-        special_tokens: Tuple[str, ...] = tuple(),
+        special_tokens: Iterable[str] = tuple(),
     ) -> None:
         """
         Initialize the T2I class.
@@ -114,7 +114,7 @@ class T2I:
             End-of-sequence token. Default is '<eos>'.
         pad_token: str
             Padding token. Default is '<pad>'.
-        special_tokens: Tuple[str, ...]
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens.
         """
         assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
@@ -199,7 +199,7 @@ class T2I:
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         pad_token: str = STD_PAD,
-        special_tokens: Tuple[str, ...] = tuple(),
+        special_tokens: Iterable[str] = tuple(),
     ):
         """
         Build token index from scratch on a corpus.
@@ -222,7 +222,7 @@ class T2I:
             Token that marks the end of a sequence. Default is '<eos>'.
         pad_token: str
             Padding token. Default is '<pad>'.
-        special_tokens: Tuple[str, ...]
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens, given as unnamed arguments.
 
         Returns
@@ -248,7 +248,7 @@ class T2I:
         unk_token: str = STD_UNK,
         eos_token: str = STD_EOS,
         pad_token: str = STD_PAD,
-        special_tokens: Tuple[str, ...] = tuple(),
+        special_tokens: Iterable[str] = tuple(),
     ):
         """
         Generate a T2I object from a file. This file can have two possible formats:
@@ -276,7 +276,7 @@ class T2I:
             Token that marks the end of a sequence. Default is '<eos>'.
         pad_token: str
             Padding token. Default is '<pad>'.
-        special_tokens: Tuple[str, ...]
+        special_tokens: Iterable[str]
             An arbitrary number of additional special tokens.
 
         Returns
