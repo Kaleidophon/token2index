@@ -372,6 +372,7 @@ class MiscellaneousTests(unittest.TestCase):
 
     def setUp(self):
         self.test_corpus1 = "A B C D B C A E"
+        self.test_corpus2 = "A B C D F C A E"
 
     def test_representation(self):
         """
@@ -414,13 +415,27 @@ class MiscellaneousTests(unittest.TestCase):
 
     def test_iter(self):
         """
-        Test the __iter__ method.
+        Test the __iter__, tokens() and indices() functions.
         """
         t2i = T2I.build(self.test_corpus1)
 
         contents = set([(k, v) for k, v in t2i])
-        expected_contents = {("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6), ("<pad>", 7)}
-        self.assertEqual(expected_contents, contents)
+        expected_contents = [("A", 0), ("B", 1), ("C", 2), ("D", 3), ("E", 4), ("<unk>", 5), ("<eos>", 6), ("<pad>", 7)]
+        self.assertEqual(set(expected_contents), contents)
+        self.assertEqual(list(zip(*expected_contents))[0], t2i.tokens())
+        self.assertEqual(list(zip(*expected_contents))[1], t2i.indices())
+
+    def test_eq(self):
+        """
+        Test the __eq__ function.
+        """
+        t2i1 = T2I.build(self.test_corpus1)
+        t2i2 = T2I.build(self.test_corpus1)
+        t2i3 = T2I.build(self.test_corpus2)
+
+        self.assertTrue((t2i1 == t2i2))
+        self.assertFalse((t2i1 == t2i3))
+        self.assertFalse((t2i1 == t2i1._index))
 
 
 class TypeConsistencyTests(unittest.TestCase):
@@ -554,10 +569,25 @@ class VocabFileTests(unittest.TestCase):
                 "\n".join(["{}###{}".format(token, index) for token, index in zip(self.tokens, self.indices2)])
             )
 
-        # Test what happens if unk, eos or special tokens are already in vocab file
+        # Test what happens if unk, eos or special tokens are already in vocab file, first format
         self.vocab_path5 = "vocab5.csv"
         with open(self.vocab_path5, "w") as vocab_file5:
             vocab_file5.write("\n".join(self.tokens + ["<unk>", "<eos>", "<mask>", "<flask>"]))
+
+        # Test what happens if unk, eos or special tokens are already in vocab file, second format
+        self.vocab_path5b = "vocab5b.csv"
+        with open(self.vocab_path5b, "w") as vocab_file5b:
+            vocab_file5b.write(
+                "\n".join(
+                    [
+                        "{}\t{}".format(token, index)
+                        for token, index in zip(
+                            ["<unk>", "<eos>", "<mask>", "<flask>"] + self.tokens,
+                            list(reversed(range(len(self.tokens) + 4))),
+                        )
+                    ]
+                )
+            )
 
         # ### Improper vocab files ###
         # First case: Inconsistent delimiters
@@ -605,6 +635,7 @@ class VocabFileTests(unittest.TestCase):
         os.remove(self.vocab_path3)
         os.remove(self.vocab_path4)
         os.remove(self.vocab_path5)
+        os.remove(self.vocab_path5b)
         os.remove(self.vocab_path6)
         os.remove(self.vocab_path7)
         os.remove(self.vocab_path8)
@@ -635,6 +666,11 @@ class VocabFileTests(unittest.TestCase):
         t2i5 = T2I.from_file(self.vocab_path5, special_tokens=("<mask>", "<flask>"))
         self.assertEqual(t2i1["<eos>"], t2i5["<eos>"])
         self.assertEqual(t2i1["<unk>"], t2i5["<unk>"])
+
+        # unk, eos, special tokens already in vocab file, second format
+        t2i5b = T2I.from_file(self.vocab_path5b, special_tokens=("<mask>", "<flask>"))
+        self.assertEqual(t2i1["<eos>"], t2i5b["<eos>"])
+        self.assertEqual(t2i1["<unk>"], t2i5b["<unk>"])
 
         # ### Improper vocab files ###
         # Nonsensical format
