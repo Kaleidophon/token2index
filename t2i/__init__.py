@@ -524,7 +524,7 @@ class T2I:
 
     def tokens(self) -> Tuple[str, ...]:
         """ Return all token in this T2I object. """
-        return tuple(self._index.keys())
+        return tuple(token for token, _ in self._index.items())
 
     def indices(self) -> Tuple[int, ...]:
         """ Return all indices in this T2I object. """
