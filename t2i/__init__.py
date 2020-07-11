@@ -528,7 +528,7 @@ class T2I:
 
     def indices(self) -> Tuple[int, ...]:
         """ Return all indices in this T2I object. """
-        return tuple(self._index.values())
+        return tuple(idx for _, idx in self._index.items())
 
     def save(self, path: str) -> None:
         """ Save T2I object as pickle. """
