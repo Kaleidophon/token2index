@@ -26,7 +26,7 @@ IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK", "STD_PAD"]
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Dennis Ulmer"
 
 
