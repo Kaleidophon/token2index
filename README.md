@@ -3,7 +3,7 @@
 [![Build](https://travis-ci.org/Kaleidophon/token2index.svg?branch=master)](https://travis-ci.org/github/Kaleidophon/token2index/builds)
 [![Documentation Status](https://readthedocs.org/projects/token2index/badge/?version=latest)](https://token2index.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/Kaleidophon/token2index/badge.svg?branch=master)](https://coveralls.io/github/Kaleidophon/token2index?branch=master)
-[![Compatibility](https://img.shields.io/badge/Python-3.5%20%7C%203.6%20%7C%203.7%20%7C%203.8-blue)]()
+[![Compatibility](https://img.shields.io/badge/Python-3.5%20--%203.9-blue)]()
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 
