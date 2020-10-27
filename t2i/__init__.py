@@ -521,7 +521,11 @@ class T2I:
     def _check_corpus(corpus: Corpus) -> None:
         """ Check whether the current corpus is a proper instance of Corpus. """
 
-        if isinstance(corpus, IterableClass):
+        # Type is str
+        if type(corpus) == str:
+            return
+
+        elif isinstance(corpus, IterableClass):
             sample = corpus[0]
 
             # Type is Iterable[str]
@@ -534,10 +538,6 @@ class T2I:
                 # Type is Iterable[Iterable[str]]
                 if type(ssample) == str:
                     return
-
-        # Type is str
-        elif type(corpus) == str:
-            return
 
         raise AssertionError(
             "'corpus' argument has to be of type str, Iterable[str] or Iterable[Iterable[str]], different type found."
