@@ -456,19 +456,22 @@ class TypeConsistencyTests(unittest.TestCase):
         # Test build()
         test_sentence = "This is a test sentence"
         test_corpus = ["This is a", "test sentence"]
+        test_tokenized_corpus = [["This", "is", "a"], ["test", "sentence"]]
 
         t2i1 = T2I.build(test_sentence)
         t2i2 = T2I.build(test_corpus)
-        self.assertEqual(t2i1, t2i2)
+        t2i3 = T2I.build(test_tokenized_corpus)
+        self.assertEqual(t2i1, t2i2, t2i3)
 
         # Test extend()
         test_sentence2 = "These are new words"
         test_corpus2 = ["These are", "new words"]
+        test_tokenized_corpus2 = [["These", "are"], ["new", "words"]]
 
-        self.assertEqual(t2i1.extend(test_sentence2), t2i2.extend(test_corpus2))
+        self.assertEqual(t2i1.extend(test_sentence2), t2i2.extend(test_corpus2), t2i3.extend(test_tokenized_corpus2))
 
         # Test extend with a mix of types
-        self.assertEqual(t2i1.extend(test_corpus2), t2i2.extend(test_sentence2))
+        self.assertEqual(t2i1.extend(test_tokenized_corpus2), t2i2.extend(test_sentence2), t2i3.extend(test_corpus2))
 
     def test_indexing_consistency(self):
         """
@@ -526,6 +529,46 @@ class TypeConsistencyTests(unittest.TestCase):
         self.assertEqual(type(unindexed_test_corpus), list)
         self.assertTrue(all([type(sent) == list for sent in unjoined_test_corpus]))
         self.assertTrue(all([type(token) == str for sent in unjoined_test_corpus for token in sent]))
+
+        # Check indexing consistency for a list of tokenized sentences
+        test_tokenized_corpus = [["This", "is", "a"], ["test", "sentence"]]
+        indexed_test_tokenized_corpus = self.t2i(test_tokenized_corpus)
+
+        self.assertEqual(type(indexed_test_tokenized_corpus), list)
+        self.assertTrue(all([type(sent) == list for sent in indexed_test_tokenized_corpus]))
+        self.assertTrue(all([type(idx) == int for sent in indexed_test_tokenized_corpus for idx in sent]))
+
+        # Check un-indexing consistency for a list of tokenized sentences
+        unindexed_test_tokenized_corpus = self.t2i.unindex(indexed_test_tokenized_corpus)
+        self.assertEqual(type(unindexed_test_tokenized_corpus), list)
+        self.assertTrue([type(sent) == str for sent in unindexed_test_tokenized_corpus])
+        self.assertEqual(unindexed_test_tokenized_corpus, test_corpus)
+        self.assertEqual(
+            [sent.replace(" ", "###") for sent in test_corpus],
+            self.t2i.unindex(indexed_test_tokenized_corpus, joiner="###"),
+        )
+
+    def test_check_corpus(self):
+        """
+        Test the _check_corpus() function.
+        """
+        test_sentence = "This is a test sentence"
+        test_corpus = ["This is a", "test sentence"]
+        test_tokenized_corpus = [["This", "is", "a"], ["test", "sentence"]]
+
+        # These should work
+        T2I._check_corpus(test_sentence)
+        T2I._check_corpus(test_corpus)
+        T2I._check_corpus(test_tokenized_corpus)
+
+        # These should fail
+        # Completely unexpected type
+        with self.assertRaises(AssertionError):
+            T2I._check_corpus(list(range(10)))
+
+        # Additional nesting
+        with self.assertRaises(AssertionError):
+            T2I._check_corpus([test_tokenized_corpus])
 
 
 class VocabFileTests(unittest.TestCase):
