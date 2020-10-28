@@ -4,7 +4,7 @@ Originally based on the `diagnnose <https://github.com/i-machine-think/diagnnose
 """
 
 import codecs
-from collections import Counter
+from collections import Counter, Iterable as IterableClass  # Distinguish from typing.Iterable
 import sys
 import pickle
 from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple, Iterator
@@ -20,13 +20,13 @@ STD_EOS = "<eos>"
 STD_PAD = "<pad>"
 
 # Custom types
-Corpus = Union[str, Iterable[str]]
+Corpus = Union[str, Iterable[str], Iterable[Iterable[str]]]
 IndexedCorpus = [Iterable[int], Iterable[Iterable[int]]]
 
 # Restrict direct imports from t2i.decorators module
 sys.modules["t2i.decorators"] = None
 __all__ = ["T2I", "Index", "Corpus", "IndexedCorpus", "STD_EOS", "STD_UNK", "STD_PAD"]
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __author__ = "Dennis Ulmer"
 
 
@@ -227,6 +227,7 @@ class T2I:
         assert max_size is None or max_size > 2, "max_size has to be larger than 2, {} given.".format(max_size)
         assert min_freq > 0, "min_freq has to be at least 1, {} given.".format(min_freq)
 
+        T2I._check_corpus(corpus)
         t2i = T2I._create_index(corpus, delimiter)
 
         return T2I(t2i, counter, max_size, min_freq, unk_token, eos_token, pad_token, special_tokens)
@@ -341,6 +342,7 @@ class T2I:
         t2i: T2I
             New T2I object.
         """
+        self._check_corpus(corpus)
         raw_t2i = T2I._create_index(corpus, delimiter, index=Index(self._index))
 
         t2i = T2I(
@@ -372,14 +374,24 @@ class T2I:
         t2i: Index
             Newly build or extended index, mapping words to indices.
         """
+
         if index is None:
             index = Index()
 
+        # If type(corpus) is str
         if type(corpus) == str:
             corpus = [corpus]  # Avoid code redundancy in case of single string
 
         for sentence in corpus:
-            tokens = sentence.strip().split(delimiter)
+            # If type(corpus) is Iterable[str]
+            if type(sentence) == str:
+                tokens = sentence.strip().split(delimiter)
+
+            # If type(corpus) is Iterable[Iterable[str]]
+            else:
+                tokens = sentence
+
+            # Perform lookup
             [index[token] for token in tokens]
 
         return index
@@ -459,6 +471,7 @@ class T2I:
         indexed_corpus: IndexedCorpus
             Indexed corpus.
         """
+        self._check_corpus(corpus)
         indexed_corpus = []
 
         # Resolve pad_up_to
@@ -482,7 +495,13 @@ class T2I:
         # Index
         for sentence in corpus:
 
-            split_sentence = sentence.strip().split(delimiter)
+            # If type(corpus) is Iterable[str]
+            if type(sentence) == str:
+                split_sentence = sentence.strip().split(delimiter)
+
+            # If type(corpus) is Iterable[Iterable[str]]
+            else:
+                split_sentence = sentence
 
             if len(split_sentence) < max_seq_len:
                 split_sentence += [self.pad_token] * (max_seq_len - len(split_sentence))
@@ -497,6 +516,32 @@ class T2I:
             indexed_corpus.append(list(map(self.__getitem__, split_sentence)))
 
         return indexed_corpus
+
+    @staticmethod
+    def _check_corpus(corpus: Corpus) -> None:
+        """ Check whether the current corpus is a proper instance of Corpus. """
+
+        # Type is str
+        if type(corpus) == str:
+            return
+
+        elif isinstance(corpus, IterableClass):
+            sample = corpus[0]
+
+            # Type is Iterable[str]
+            if type(sample) == str:
+                return
+
+            elif isinstance(sample, IterableClass):
+                ssample = sample[0]
+
+                # Type is Iterable[Iterable[str]]
+                if type(ssample) == str:
+                    return
+
+        raise AssertionError(
+            "'corpus' argument has to be of type str, Iterable[str] or Iterable[Iterable[str]], different type found."
+        )
 
     def __getitem__(self, token: str) -> int:
         """ Return the index corresponding to a token. """

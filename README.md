@@ -38,6 +38,10 @@ function call, all while being fully tested.
     >>> t2i = t2i.extend("completely new words")
     T2I(Size: 16, unk_token: <unk>, eos_token: <eos>, pad_token: <pad>, {'colorless': 0, 'green': 1, 'ideas': 2, 'dream': 3, 'furiously': 4, 'the': 5, 'horse': 6, 'raced': 7, 'past': 8, 'barn': 9, 'fell': 10, 'completely': 13, 'new': 14, 'words': 15, '<unk>': 16, '<eos>': 17, '<pad>': 18})
     ```
+  
+    Both methods and index() also work with an already tokenized corpus in the form of 
+    
+        [["colorless", "green", "ideas", "dream", "furiously"], ["the", "horse", "raced", "past", "the", "barn", "fell"]]    
 
 * **Easy indexing (of batches)**
     
