@@ -7,7 +7,7 @@ python:
   - "3.6.3"
   - "3.7"
   - "3.8"
-  - "3.9"
+  # - "3.9"
 
 # command to install dependencies
 install:
@@ -17,7 +17,7 @@ install:
   # dev dependencies
   - pip install coverage
   - pip install coveralls
-  - pip install torch==1.4.0+cpu
+  - pip install torch==1.4.0
   - pip install tensorflow
   - pip install numpy
 
