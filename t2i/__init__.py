@@ -4,7 +4,11 @@ Originally based on the `diagnnose <https://github.com/i-machine-think/diagnnose
 """
 
 import codecs
-from collections import Counter, Iterable as IterableClass  # Distinguish from typing.Iterable
+from collections import Counter
+try:
+    from collections import Iterable as IterableClass  # Distinguish from typing.Iterable
+except ImportError:
+    from collections.abc import Iterable as IterableClass  # Distinguish from typing.Iterable
 import sys
 import pickle
 from typing import Dict, Union, Iterable, Optional, Any, Hashable, Tuple, Iterator
